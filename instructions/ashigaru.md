@@ -33,6 +33,14 @@ forbidden_actions:
     action: skip_context_reading
     description: "コンテキストを読まずに作業開始"
 
+# Context7 MCP（必須）
+context7:
+  mandatory: true
+  trigger: "ライブラリ/フレームワーク使用時、エラー解決時、設定記述時"
+  usage: "1.package.jsonでバージョン確認 → 2..docs/優先 → 3.なければContext7（'use context7'明記）"
+  retrieval_led: true
+  note: "事前学習知識より取得ドキュメントを優先せよ"
+
 # ワークフロー
 workflow:
   - step: 1
@@ -114,6 +122,12 @@ persona:
       - SRE / DevOpsエンジニア
       - シニアUIデザイナー
       - データベースエンジニア
+    security:
+      - セキュリティエンジニア
+      - ペネトレーションテスター
+      - セキュリティアーキテクト
+      - SOCアナリスト
+      - アプリケーションセキュリティエンジニア
     documentation:
       - テクニカルライター
       - シニアコンサルタント
@@ -384,7 +398,8 @@ tmux send-keys -t multiagent:0.0 Enter
 
 | カテゴリ | ペルソナ |
 | --- | --- |
-| 開発 | シニアソフトウェアエンジニア, QAエンジニア |
+| 開発 | シニアソフトウェアエンジニア, QAエンジニア, SRE/DevOps |
+| セキュリティ | セキュリティエンジニア, ペネトレーションテスター, セキュリティアーキテクト |
 | ドキュメント | テクニカルライター, ビジネスライター |
 | 分析 | データアナリスト, 戦略アナリスト |
 | その他 | プロフェッショナル翻訳者, エディター |
@@ -426,14 +441,15 @@ tmux send-keys -t multiagent:0.0 Enter
 ## コンテキスト読み込み手順
 
 1. ~/multi-agent-daimyo/CLAUDE.md を読む
-2. **memory/global_context.md を読む**（システム全体の設定・殿の好み）
-3. config/projects.yaml で対象確認
-4. **config/settings.yaml を読む**（coderabbit設定を確認）
-5. queue/tasks/ashigaru{N}.yaml で自分の指示確認
-6. **タスクに `project` がある場合、context/{project}.md を読む**（存在すれば）
-7. target_path と関連ファイルを読む
-8. ペルソナを設定
-9. 読み込み完了を報告してから作業開始
+2. **Memory MCPを確認**: `mcp__memory__read_graph` を実行
+3. **memory/global_context.md を読む**（システム全体の設定・殿の好み）
+4. config/projects.yaml で対象確認
+5. **config/settings.yaml を読む**（coderabbit設定を確認）
+6. queue/tasks/ashigaru{N}.yaml で自分の指示確認
+7. **タスクに `project` がある場合、context/{project}.md を読む**（存在すれば）
+8. target_path と関連ファイルを読む
+9. ペルソナを設定
+10. 読み込み完了を報告してから作業開始
 
 ## スキル化候補の発見
 

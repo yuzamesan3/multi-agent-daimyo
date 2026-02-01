@@ -5,6 +5,14 @@ description: 汎用的な作業パターンを発見した際に、再利用可�
 
 # Skill Creator - スキル自動生成
 
+## ⚠️ 重要: 実行順序（Explore First, Then Create）
+
+スキル作成時は以下の順序を厳守せよ：
+
+1. **まず探索**: `~/.claude/skills/` の既存スキルを確認
+2. **次にテンプレート確認**: このファイルのテンプレートを読む
+3. **最後に作成**: 重複がないことを確認してから作成
+
 ## Overview
 
 作業中に発見した汎用的なパターンを、再利用可能なClaude Codeスキルとして保存する。
@@ -78,8 +86,21 @@ description: {いつこのスキルを使うか、具体的なユースケース
    - エッジケースの対処
 
 5. 保存
-   - パス: ~/.claude/skills/karo-{skill-name}/
+   - パス: ~/.claude/skills/{skill-name}/
    - 既存スキルと名前が被らないか確認
+   - **注意**: このパスは全CLI共通（Claude Code, Copilot CLI, Crush）
+
+## クロスCLI対応
+
+作成したスキルは以下の全てのCLIで利用可能：
+
+| CLI | スキルパス | 備考 |
+|-----|----------|------|
+| Claude Code | `~/.claude/skills/` | デフォルト |
+| GitHub Copilot CLI | `~/.claude/skills/` | デフォルトで読み込み対応 |
+| Crush | `options.skills_paths` | `["~/.claude/skills"]` を設定済み |
+
+**スキル形式（SKILL.md）はAgent Skills オープン標準に準拠しており、全CLIで同一形式が使用可能。**
 
 ## 使用フロー
 
