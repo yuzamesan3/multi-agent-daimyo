@@ -454,7 +454,7 @@ ls -la queue/reports/
 worker_id: ashigaru3
 task_id: subtask_001
 timestamp: "2026-01-27T15:46:30"
-status: review_completed
+status: done  # 既存ステータスを使用、type: koto_review で検分結果を識別
 result:
   type: koto_review  # 工兎の検分結果
   summary: "16件の不備を検出し申した"
