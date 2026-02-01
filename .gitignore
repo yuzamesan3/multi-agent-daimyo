@@ -1,10 +1,13 @@
 # Order file (internal use only)
-claude-shogun-orders.md
+claude-karo-orders.md
 
 # Claude Code settings
 .claude/*
 !.claude/settings.json
 .mcp.json
+
+# Copilot instructions (generated at runtime)
+.github/copilot-instructions-*.md
 
 # Test outputs (generated during testing)
 test_output/

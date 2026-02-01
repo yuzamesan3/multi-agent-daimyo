@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# first_setup.sh - multi-agent-shogun 初回セットアップスクリプト
+# first_setup.sh - multi-agent-daimyo 初回セットアップスクリプト
 # Ubuntu / WSL / Mac 用環境構築ツール
 # ============================================================
 # 実行方法:
@@ -50,7 +50,7 @@ HAS_ERROR=false
 
 echo ""
 echo "  ╔══════════════════════════════════════════════════════════════╗"
-echo "  ║  🏯 multi-agent-shogun インストーラー                         ║"
+echo "  ║  🏯 multi-agent-daimyo インストーラー                         ║"
 echo "  ║     Initial Setup Script for Ubuntu / WSL                    ║"
 echo "  ╚══════════════════════════════════════════════════════════════╝"
 echo ""
@@ -326,6 +326,96 @@ else
 fi
 
 # ============================================================
+# STEP 5.5: その他のAI CLI 確認（オプション）
+# ============================================================
+log_step "STEP 5.5: その他のAI CLI 確認（オプション）"
+
+echo "  multi-agent-daimyo はマルチCLI対応です。"
+echo "  Claude Code 以外にも以下のCLIを使用できます:"
+echo ""
+echo "  【コーディングエージェント】"
+echo "    - Codex CLI (OpenAI) - OpenAI互換バックエンド対応"
+echo "    - Crush CLI (Charmbracelet) - OpenAI互換バックエンド対応"
+echo "    - Goose CLI (Block) - OpenAI互換バックエンド対応"
+echo "    - GitHub Copilot CLI"
+echo "    - Gemini CLI (Google)"
+echo ""
+echo "  【軍目付（検分役 - 指揮系統とは独立）】"
+echo "    - 工兎（こうと） - 検分専門の監察役 (CodeRabbit CLI)"
+echo ""
+echo "  ※ OpenAI互換バックエンド（GLM等）は settings.yaml で設定可能"
+echo ""
+
+# Codex CLI チェック
+if command -v codex &> /dev/null; then
+    log_success "Codex CLI がインストールされています"
+    RESULTS+=("Codex CLI: OK")
+else
+    log_info "Codex CLI が見つかりません（オプション）"
+    echo "  インストール: npm install -g @openai/codex"
+    RESULTS+=("Codex CLI: 未インストール（オプション）")
+fi
+
+# Crush CLI チェック
+if command -v crush &> /dev/null; then
+    log_success "Crush CLI がインストールされています"
+    RESULTS+=("Crush CLI: OK")
+else
+    log_info "Crush CLI が見つかりません（オプション）"
+    echo "  インストール: brew install charmbracelet/tap/crush"
+    echo "  または: npm install -g @charmland/crush"
+    RESULTS+=("Crush CLI: 未インストール（オプション）")
+fi
+
+# Goose CLI チェック
+if command -v goose &> /dev/null; then
+    log_success "Goose CLI がインストールされています"
+    RESULTS+=("Goose CLI: OK")
+else
+    log_info "Goose CLI が見つかりません（オプション）"
+    echo "  インストール: curl -fsSL https://github.com/block/goose/raw/main/download_cli.sh | bash"
+    RESULTS+=("Goose CLI: 未インストール（オプション）")
+fi
+
+# GitHub Copilot CLI チェック
+if command -v copilot &> /dev/null; then
+    log_success "GitHub Copilot CLI がインストールされています"
+    RESULTS+=("GitHub Copilot CLI: OK")
+else
+    log_info "GitHub Copilot CLI が見つかりません（オプション）"
+    echo "  インストール: npm install -g @github/copilot"
+    echo "  または: brew install copilot-cli"
+    RESULTS+=("GitHub Copilot CLI: 未インストール（オプション）")
+fi
+
+# Gemini CLI チェック
+if command -v gemini &> /dev/null; then
+    log_success "Gemini CLI がインストールされています"
+    RESULTS+=("Gemini CLI: OK")
+else
+    log_info "Gemini CLI が見つかりません（オプション）"
+    echo "  インストール: npm install -g @google/gemini-cli"
+    echo "  または: brew install gemini-cli"
+    RESULTS+=("Gemini CLI: 未インストール（オプション）")
+fi
+
+# 工兎（軍目付）CLI チェック
+echo ""
+echo "  【軍目付（検分役 - 指揮系統とは独立）】"
+if command -v coderabbit &> /dev/null; then
+    log_success "工兎（軍目付）CLI がインストールされています"
+    RESULTS+=("工兎（軍目付）CLI: OK")
+else
+    log_info "工兎（軍目付）CLI が見つかりません（オプション）"
+    echo "  インストール: curl -fsSL https://cli.coderabbit.ai/install.sh | sh"
+    echo "  認証: coderabbit auth login"
+    echo "  ※ 工兎殿は検分専門の軍目付（指揮系統とは独立）"
+    RESULTS+=("工兎（軍目付）CLI: 未インストール（オプション）")
+fi
+
+echo ""
+
+# ============================================================
 # STEP 6: ディレクトリ構造作成
 # ============================================================
 log_step "STEP 6: ディレクトリ構造作成"
@@ -338,6 +428,7 @@ DIRECTORIES=(
     "status"
     "instructions"
     "logs"
+    "lib"
     "demo_output"
     "skills"
     "memory"
@@ -373,8 +464,19 @@ log_step "STEP 7: 設定ファイル確認"
 # config/settings.yaml
 if [ ! -f "$SCRIPT_DIR/config/settings.yaml" ]; then
     log_info "config/settings.yaml を作成中..."
-    cat > "$SCRIPT_DIR/config/settings.yaml" << EOF
-# multi-agent-shogun 設定ファイル
+
+    # テンプレートが存在すればそれを使用
+    if [ -f "$SCRIPT_DIR/config/settings.yaml.template" ]; then
+        cp "$SCRIPT_DIR/config/settings.yaml.template" "$SCRIPT_DIR/config/settings.yaml"
+        # パス変数を置換
+        sed -i.bak "s|\$SCRIPT_DIR|$SCRIPT_DIR|g" "$SCRIPT_DIR/config/settings.yaml"
+        sed -i.bak "s|~/multi-agent-daimyo|$SCRIPT_DIR|g" "$SCRIPT_DIR/config/settings.yaml"
+        rm -f "$SCRIPT_DIR/config/settings.yaml.bak"
+        log_success "settings.yaml をテンプレートから作成しました"
+    else
+        # テンプレートがない場合は従来のロジックで生成
+        cat > "$SCRIPT_DIR/config/settings.yaml" << EOF
+# multi-agent-daimyo 設定ファイル
 
 # 言語設定
 # ja: 日本語（戦国風日本語のみ、併記なし）
@@ -387,9 +489,13 @@ language: ja
 # zsh: zsh用プロンプト
 shell: bash
 
+# CLI設定（デフォルト: claude）
+cli:
+  default: claude
+
 # スキル設定
 skill:
-  # スキル保存先（スキル名に shogun- プレフィックスを付けて保存）
+  # スキル保存先（スキル名に karo- プレフィックスを付けて保存）
   save_path: "~/.claude/skills/"
 
   # ローカルスキル保存先（このプロジェクト専用）
@@ -400,7 +506,8 @@ logging:
   level: info  # debug | info | warn | error
   path: "$SCRIPT_DIR/logs/"
 EOF
-    log_success "settings.yaml を作成しました"
+        log_success "settings.yaml を作成しました"
+    fi
 else
     log_info "config/settings.yaml は既に存在します"
 fi
@@ -517,37 +624,37 @@ BASHRC_FILE="$HOME/.bashrc"
 # aliasが既に存在するかチェックし、なければ追加
 ALIAS_ADDED=false
 
-# css alias (将軍ウィンドウの起動)
+# csk alias (家老ウィンドウの起動)
 if [ -f "$BASHRC_FILE" ]; then
-    EXPECTED_CSS="alias css='tmux attach-session -t shogun'"
-    if ! grep -q "alias css=" "$BASHRC_FILE" 2>/dev/null; then
+    EXPECTED_CSK="alias csk='tmux attach-session -t karo'"
+    if ! grep -q "alias csk=" "$BASHRC_FILE" 2>/dev/null; then
         # alias が存在しない → 新規追加
         echo "" >> "$BASHRC_FILE"
-        echo "# multi-agent-shogun aliases (added by first_setup.sh)" >> "$BASHRC_FILE"
-        echo "$EXPECTED_CSS" >> "$BASHRC_FILE"
-        log_info "alias css を追加しました（将軍ウィンドウの起動）"
+        echo "# multi-agent-daimyo aliases (added by first_setup.sh)" >> "$BASHRC_FILE"
+        echo "$EXPECTED_CSK" >> "$BASHRC_FILE"
+        log_info "alias csk を追加しました（家老ウィンドウの起動）"
         ALIAS_ADDED=true
-    elif ! grep -qF "$EXPECTED_CSS" "$BASHRC_FILE" 2>/dev/null; then
+    elif ! grep -qF "$EXPECTED_CSK" "$BASHRC_FILE" 2>/dev/null; then
         # alias は存在するがパスが異なる → 更新
-        if sed -i "s|alias css=.*|$EXPECTED_CSS|" "$BASHRC_FILE" 2>/dev/null; then
-            log_info "alias css を更新しました（パス変更検出）"
+        if sed -i "s|alias csk=.*|$EXPECTED_CSK|" "$BASHRC_FILE" 2>/dev/null; then
+            log_info "alias csk を更新しました（パス変更検出）"
         else
-            log_warn "alias css の更新に失敗しました"
+            log_warn "alias csk の更新に失敗しました"
         fi
         ALIAS_ADDED=true
     else
-        log_info "alias css は既に正しく設定されています"
+        log_info "alias csk は既に正しく設定されています"
     fi
 
-    # csm alias (家老・足軽ウィンドウの起動)
+    # csm alias (部将・足軽ウィンドウの起動)
     EXPECTED_CSM="alias csm='tmux attach-session -t multiagent'"
     if ! grep -q "alias csm=" "$BASHRC_FILE" 2>/dev/null; then
         if [ "$ALIAS_ADDED" = false ]; then
             echo "" >> "$BASHRC_FILE"
-            echo "# multi-agent-shogun aliases (added by first_setup.sh)" >> "$BASHRC_FILE"
+            echo "# multi-agent-daimyo aliases (added by first_setup.sh)" >> "$BASHRC_FILE"
         fi
         echo "$EXPECTED_CSM" >> "$BASHRC_FILE"
-        log_info "alias csm を追加しました（家老・足軽ウィンドウの起動）"
+        log_info "alias csm を追加しました（部将・足軽ウィンドウの起動）"
         ALIAS_ADDED=true
     elif ! grep -qF "$EXPECTED_CSM" "$BASHRC_FILE" 2>/dev/null; then
         if sed -i "s|alias csm=.*|$EXPECTED_CSM|" "$BASHRC_FILE" 2>/dev/null; then
@@ -586,7 +693,7 @@ if command -v claude &> /dev/null; then
     else
         log_info "Memory MCP を設定中..."
         if claude mcp add memory \
-            -e MEMORY_FILE_PATH="$SCRIPT_DIR/memory/shogun_memory.jsonl" \
+            -e MEMORY_FILE_PATH="$SCRIPT_DIR/memory/karo_memory.jsonl" \
             -- npx -y @modelcontextprotocol/server-memory 2>/dev/null; then
             log_success "Memory MCP 設定完了"
             RESULTS+=("Memory MCP: 設定完了")

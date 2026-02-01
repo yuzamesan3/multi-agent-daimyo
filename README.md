@@ -1,4 +1,4 @@
-# multi-agent-shogun
+# multi-agent-daimyo
 
 <div align="center">
 
@@ -18,7 +18,7 @@
 
 ## What is this?
 
-**multi-agent-shogun** is a system that runs multiple Claude Code instances simultaneously, organized like a feudal Japanese army.
+**multi-agent-daimyo** is a system that runs multiple Claude Code instances simultaneously, organized like a feudal Japanese army.
 
 **Why use this?**
 - Give one command, get 8 AI workers executing in parallel
@@ -31,11 +31,11 @@
              │
              ▼ Give orders
       ┌─────────────┐
-      │   SHOGUN    │  ← Receives your command, delegates immediately
+      │     KARO    │  ← Receives your command, delegates immediately
       └──────┬──────┘
              │ YAML files + tmux
       ┌──────▼──────┐
-      │    KARO     │  ← Distributes tasks to workers
+      │    BUSHO    │  ← Distributes tasks to workers
       └──────┬──────┘
              │
     ┌─┬─┬─┬─┴─┬─┬─┬─┐
@@ -61,9 +61,9 @@
 
 📥 **Download this repository**
 
-[Download ZIP](https://github.com/yohey-w/multi-agent-shogun/archive/refs/heads/main.zip) and extract to `C:\tools\multi-agent-shogun`
+[Download ZIP](https://github.com/yuzame/multi-agent-daimyo/archive/refs/heads/main.zip) and extract to `C:\tools\multi-agent-daimyo`
 
-*Or use git:* `git clone https://github.com/yohey-w/multi-agent-shogun.git C:\tools\multi-agent-shogun`
+*Or use git:* `git clone https://github.com/yuzame/multi-agent-daimyo.git C:\tools\multi-agent-daimyo`
 
 </td>
 </tr>
@@ -92,7 +92,7 @@ Right-click and select **"Run as administrator"** (required if WSL2 is not yet i
 🐧 **Open Ubuntu and run** (first time only)
 
 ```bash
-cd /mnt/c/tools/multi-agent-shogun
+cd /mnt/c/tools/multi-agent-daimyo
 ./first_setup.sh
 ```
 
@@ -121,7 +121,7 @@ cd /mnt/c/tools/multi-agent-shogun
 Open **Ubuntu terminal** (WSL) and run:
 
 ```bash
-cd /mnt/c/tools/multi-agent-shogun
+cd /mnt/c/tools/multi-agent-daimyo
 ./shutsujin_departure.sh
 ```
 
@@ -134,8 +134,8 @@ cd /mnt/c/tools/multi-agent-shogun
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yohey-w/multi-agent-shogun.git ~/multi-agent-shogun
-cd ~/multi-agent-shogun
+git clone https://github.com/yuzame/multi-agent-daimyo.git ~/multi-agent-daimyo
+cd ~/multi-agent-daimyo
 
 # 2. Make scripts executable
 chmod +x *.sh
@@ -147,7 +147,7 @@ chmod +x *.sh
 ### Daily Startup
 
 ```bash
-cd ~/multi-agent-shogun
+cd ~/multi-agent-daimyo
 ./shutsujin_departure.sh
 ```
 
@@ -195,9 +195,9 @@ Then restart your computer and run `install.bat` again.
 - ✅ Guides you to the next steps (`first_setup.sh`)
 
 ### What `shutsujin_departure.sh` does:
-- ✅ Creates tmux sessions (shogun + multiagent)
-- ✅ Launches Claude Code on all agents
-- ✅ Automatically loads instruction files for each agent
+- ✅ Creates tmux sessions (karo + multiagent)
+- ✅ Launches Claude Code for all agents
+- ✅ Auto-loads instruction files for each agent
 - ✅ Resets queue files for a fresh start
 
 **After running, all agents are ready to receive commands immediately!**
@@ -229,42 +229,42 @@ After running either option, **AI agents** will start automatically:
 
 | Agent | Role | Quantity |
 |-------|------|----------|
-| 🏯 Shogun | Commander - receives your orders | 1 |
-| 📋 Karo | Manager - distributes tasks | 1 |
+| 🏯 Karo | Commander - receives your orders | 1 |
+| 📋 Busho | Manager - distributes tasks | 1 |
 | ⚔️ Ashigaru | Workers - execute tasks in parallel | 8 |
 
 You'll see tmux sessions created:
-- `shogun` - Connect here to give commands
+- `karo` - Connect here to give commands
 - `multiagent` - Workers running in background
 
 ---
 
 ## 📖 Basic Usage
 
-### Step 1: Connect to Shogun
+### Step 1: Connect to Karo
 
 After running `shutsujin_departure.sh`, all agents automatically load their instructions and are ready to work.
 
-Open a new terminal and connect to the Shogun:
+Open a new terminal and connect to the Karo:
 
 ```bash
-tmux attach-session -t shogun
+tmux attach-session -t karo
 ```
 
 ### Step 2: Give Your First Order
 
-The Shogun is already initialized! Just give your command:
+The Karo is already initialized! Just give your command:
 
 ```
 Investigate the top 5 JavaScript frameworks and create a comparison table.
 ```
 
-The Shogun will:
+The Karo will:
 1. Write the task to a YAML file
-2. Notify the Karo (manager)
+2. Notify the Busho (manager)
 3. Return control to you immediately (you don't have to wait!)
 
-Meanwhile, the Karo distributes the work to Ashigaru workers who execute in parallel.
+Meanwhile, the Busho distributes the work to Ashigaru workers who execute in parallel.
 
 ### Step 3: Check Progress
 
@@ -295,10 +295,10 @@ You: "Research 5 MCP servers"
 
 ### 🔄 2. Non-Blocking Workflow
 
-The Shogun delegates immediately and returns control to you:
+The Karo delegates immediately and returns control to you:
 
 ```
-You: Give order → Shogun: Delegates → You: Can give next order immediately
+You: Give order → Karo: Delegates → You: Can give next order immediately
                                            ↓
                          Workers: Execute in background
                                            ↓
@@ -333,7 +333,7 @@ VSCode's Claude Code extension lets you paste screenshots to explain issues. Thi
 screenshot:
   path: "/mnt/c/Users/YourName/Pictures/Screenshots"
 
-# Then just tell the Shogun:
+# Then just tell the Karo:
 You: "Check the latest screenshot"
 You: "Look at the last 2 screenshots"
 → AI reads and analyzes your screenshots instantly
@@ -350,11 +350,11 @@ Perfect for:
 
 | Agent | Model | Thinking | Reason |
 |-------|-------|----------|--------|
-| Shogun | Opus | Disabled | Delegation & dashboard updates don't need deep reasoning |
-| Karo | Default | Enabled | Task distribution requires careful judgment |
+| Karo | Opus | Disabled | Delegation & dashboard updates don't need deep reasoning |
+| Busho | Default | Enabled | Task distribution requires careful judgment |
 | Ashigaru | Default | Enabled | Actual implementation needs full capabilities |
 
-The Shogun uses `MAX_THINKING_TOKENS=0` to disable extended thinking, reducing latency and cost while maintaining Opus-level judgment for high-level decisions.
+The Karo uses `MAX_THINKING_TOKENS=0` to disable extended thinking, reducing latency and cost while maintaining Opus-level judgment for high-level decisions.
 
 ### 📁 Context Management
 
@@ -362,7 +362,7 @@ The system uses a three-layer context structure for efficient knowledge sharing:
 
 | Layer | Location | Purpose |
 |-------|----------|---------|
-| Memory MCP | `memory/shogun_memory.jsonl` | Persistent memory across sessions (preferences, decisions) |
+| Memory MCP | `memory/karo_memory.jsonl` | Persistent memory across sessions (preferences, decisions) |
 | Global | `memory/global_context.md` | System-wide settings, user preferences |
 | Project | `context/{project}.md` | Project-specific knowledge and state |
 
@@ -397,7 +397,190 @@ Skills are not included in this repository by default.
 As you use the system, skill candidates will appear in `dashboard.md`.
 Review and approve them to grow your personal skill library.
 
-Skills can be invoked with `/skill-name`. Just tell the Shogun: "run `/skill-name`".
+Skills can be invoked with `/skill-name`. Just tell the Karo: "run `/skill-name`".
+
+---
+
+## 🔀 Multi-CLI Support
+
+**multi-agent-daimyo** supports multiple AI CLIs, not just Claude Code.
+
+### Supported CLIs (Coding Agents)
+
+| CLI | Features | OpenAI Compatible | Recommended Use Case |
+|-----|----------|:-----------------:|---------------------|
+| **Claude Code CLI** | Opus/Sonnet models, MCP integration | ✅ | Tasks requiring advanced reasoning |
+| **Codex CLI** | OpenAI official, full-auto mode | ✅ | Code generation focused tasks |
+| **Crush CLI** | Charmbracelet, YOLO mode | ✅ | Lightweight tasks, fast processing |
+| **Goose CLI** | Block, multi-model support | ✅ | Flexible model switching |
+| **GitHub Copilot CLI** | Claude/GPT-5 models, GitHub integration | ❌ | Tasks requiring GitHub integration |
+| **Gemini CLI** | Google AI, 1M token context | ❌ | Large context processing |
+
+> **Note**: CLIs with ✅ can use OpenAI-compatible APIs (GLM, DeepSeek, etc.) as backends.
+
+### 軍目付（Inspector - Separate Role）
+
+| Name | Role | Features |
+|------|------|----------|
+| **工兎（Koto）** | 軍目付 (Inspector) | Code inspection, security analysis (CodeRabbit) |
+
+> **Note**: Koto is a "Gun-metsuke" (military inspector) - an independent inspection role separate from the command chain (Karo → Busho → Ashigaru). Koto specializes only in code inspection and cannot perform general tasks.
+
+### Configuration
+
+Specify CLI for each agent in `config/settings.yaml`:
+
+```yaml
+cli:
+  # Default for all agents
+  default: claude
+
+  # Per-agent configuration (optional)
+  agents:
+    karo:
+      type: claude
+      model: opus
+
+    # Claude Code CLI + GLM Backend (OpenAI-compatible)
+    ashigaru1:
+      type: claude
+      backend:
+        base_url: "https://open.bigmodel.cn/api/paas/v4"
+        api_key_env: "GLM_API_KEY"
+        model: "glm-4-plus"
+
+    # Codex CLI + DeepSeek Backend (OpenAI-compatible)
+    ashigaru2:
+      type: codex
+      backend:
+        base_url: "https://api.deepseek.com/v1"
+        api_key_env: "DEEPSEEK_API_KEY"
+        model: "deepseek-coder"
+
+    # Crush CLI
+    ashigaru3:
+      type: crush
+
+    # Goose CLI
+    ashigaru4:
+      type: goose
+
+    # GitHub Copilot CLI
+    ashigaru5:
+      type: copilot
+
+    # Gemini CLI
+    ashigaru6:
+      type: gemini
+      model: gemini-2.5-flash
+```
+
+### Command-Line Flags
+
+```bash
+# Use settings from config file (default)
+./shutsujin_departure.sh
+
+# Force all agents to use Claude Code CLI
+./shutsujin_departure.sh --claude
+
+# Force all agents to use Codex CLI
+./shutsujin_departure.sh --codex
+
+# Force all agents to use Crush CLI
+./shutsujin_departure.sh --crush
+
+# Force all agents to use Goose CLI
+./shutsujin_departure.sh --goose
+
+# Force all agents to use GitHub Copilot CLI
+./shutsujin_departure.sh --copilot
+
+# Force all agents to use Gemini CLI
+./shutsujin_departure.sh --gemini
+```
+
+### Prerequisites
+
+**Claude Code CLI**:
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+**Codex CLI**:
+```bash
+npm install -g @openai/codex
+export OPENAI_API_KEY="your-api-key"
+```
+
+**Crush CLI**:
+```bash
+brew install charmbracelet/tap/crush
+# or
+npm install -g @charmland/crush
+```
+
+**Goose CLI**:
+```bash
+curl -fsSL https://github.com/block/goose/raw/main/download_cli.sh | bash
+```
+
+**GitHub Copilot CLI**:
+```bash
+npm install -g @github/copilot
+# or
+brew install copilot-cli
+```
+
+**Gemini CLI**:
+```bash
+npm install -g @google/gemini-cli
+# or
+brew install gemini-cli
+```
+
+### 軍目付（Inspector）Installation
+
+**工兎（Koto）** - CodeRabbit CLI:
+```bash
+curl -fsSL https://cli.coderabbit.ai/install.sh | sh
+coderabbit auth login
+```
+
+> Ashigaru requests inspection from Koto after implementing code. Inspection results are reported to Busho, who redistributes fix tasks:
+> ```
+> Ashigaru implements code
+>     ↓
+> Ashigaru: "工兎殿に検分を依頼し申した"
+>     (coderabbit --prompt-only --type uncommitted)
+>     ↓
+> Ashigaru reports Koto's findings to Busho
+>     ↓
+> Busho analyzes and splits fix tasks
+>     ↓
+> Multiple Ashigaru fix in parallel
+> ```
+
+### OpenAI-Compatible Backend Configuration
+
+To use OpenAI-compatible APIs like GLM or DeepSeek:
+
+```yaml
+cli:
+  agents:
+    ashigaru1:
+      type: claude  # claude, codex, crush, or goose
+      backend:
+        base_url: "https://open.bigmodel.cn/api/paas/v4"  # API endpoint
+        api_key_env: "GLM_API_KEY"  # Environment variable name
+        model: "glm-4-plus"  # Model name
+```
+
+Set the environment variables:
+```bash
+export GLM_API_KEY="your-glm-api-key"
+export DEEPSEEK_API_KEY="your-deepseek-api-key"
+```
 
 ---
 
@@ -405,14 +588,14 @@ Skills can be invoked with `/skill-name`. Just tell the Shogun: "run `/skill-nam
 
 ### Why Hierarchical Structure?
 
-The Shogun → Karo → Ashigaru hierarchy exists for:
+The Karo → Busho → Ashigaru hierarchy exists for:
 
-1. **Immediate Response**: Shogun delegates instantly and returns control to you
-2. **Parallel Execution**: Karo distributes to multiple Ashigaru simultaneously
-3. **Separation of Concerns**: Each role is clearly defined — Shogun decides "what", Karo decides "who"
+1. **Immediate Response**: Karo delegates instantly and returns control to you
+2. **Parallel Execution**: Busho distributes to multiple Ashigaru simultaneously
+3. **Separation of Concerns**: Each role is clearly defined — Karo decides "what", Busho decides "who"
 4. **Scalability**: Adding more Ashigaru doesn't break the structure
 5. **Fault Isolation**: One Ashigaru failing doesn't affect others
-6. **Centralized Reporting**: Only Shogun communicates with you, keeping information organized
+6. **Centralized Reporting**: Only Karo communicates with you, keeping information organized
 
 ### Why YAML + send-keys?
 
@@ -421,12 +604,12 @@ The Shogun → Karo → Ashigaru hierarchy exists for:
 - **No direct calls**: Agents can't interrupt each other or your input
 - **Conflict avoidance**: Each Ashigaru has dedicated files, preventing race conditions
 
-### Why Only Karo Updates Dashboard?
+### Why Only Busho Updates Dashboard?
 
 - **Single responsibility**: One writer = no conflicts
-- **Information hub**: Karo receives all reports, knows the full picture
+- **Information hub**: Busho receives all reports, knows the full picture
 - **Consistency**: All updates go through one quality gate
-- **No interruptions**: Prevents disrupting your input when Shogun would otherwise update the dashboard
+- **No interruptions**: Prevents disrupting your input when Karo would otherwise update the dashboard
 
 ### How Skills Work
 
@@ -446,7 +629,7 @@ Candidate appears in dashboard.md under "Skill Candidates"
     ↓
 You (the Lord) review the candidate
     ↓
-If approved, Karo creates the skill
+If approved, Busho creates the skill
 ```
 
 Skills are **user-driven** — they only grow when you decide they're useful. Automatic growth would make them unmanageable, so only what you explicitly approve gets added.
@@ -485,7 +668,7 @@ claude mcp add sequential-thinking -- npx -y @modelcontextprotocol/server-sequen
 # 5. Memory - Long-term memory across sessions (Recommended!)
 # ✅ Automatically configured by first_setup.sh
 # To reconfigure manually:
-claude mcp add memory -e MEMORY_FILE_PATH="$PWD/memory/shogun_memory.jsonl" -- npx -y @modelcontextprotocol/server-memory
+claude mcp add memory -e MEMORY_FILE_PATH="$PWD/memory/karo_memory.jsonl" -- npx -y @modelcontextprotocol/server-memory
 ```
 
 ### Verify Installation
@@ -506,8 +689,8 @@ You should see all servers with "Connected" status.
 You: "Research the top 5 AI coding assistants and compare them"
 
 What happens:
-1. Shogun delegates to Karo
-2. Karo assigns:
+1. Karo delegates to Busho
+2. Busho assigns:
    - Ashigaru 1: Research GitHub Copilot
    - Ashigaru 2: Research Cursor
    - Ashigaru 3: Research Claude Code
@@ -523,7 +706,7 @@ What happens:
 You: "Prepare a PoC for the project in this Notion page: [URL]"
 
 What happens:
-1. Karo fetches Notion content via MCP
+1. Busho fetches Notion content via MCP
 2. Ashigaru 2: Lists items to clarify
 3. Ashigaru 3: Researches technical feasibility
 4. Ashigaru 4: Creates PoC plan document
@@ -574,7 +757,7 @@ language: en   # Japanese + English translation
 │  shutsujin_departure.sh                                             │
 │      │                                                              │
 │      ├──▶ Create tmux sessions                                      │
-│      │         • "shogun" session (1 pane)                          │
+│      │         • "karo" session (1 pane)                            │
 │      │         • "multiagent" session (9 panes, 3x3 grid)           │
 │      │                                                              │
 │      ├──▶ Reset queue files and dashboard                           │
@@ -614,7 +797,7 @@ language: en   # Japanese + English translation
 **Normal Daily Usage:**
 ```bash
 ./shutsujin_departure.sh          # Start everything
-tmux attach-session -t shogun     # Connect to give commands
+tmux attach-session -t karo       # Connect to give commands
 ```
 
 **Debug Mode (manual control):**
@@ -622,14 +805,14 @@ tmux attach-session -t shogun     # Connect to give commands
 ./shutsujin_departure.sh -s       # Create sessions only
 
 # Manually start Claude Code on specific agents
-tmux send-keys -t shogun:0 'claude --dangerously-skip-permissions' Enter
+tmux send-keys -t karo:0 'claude --dangerously-skip-permissions' Enter
 tmux send-keys -t multiagent:0.0 'claude --dangerously-skip-permissions' Enter
 ```
 
 **Restart After Crash:**
 ```bash
 # Kill existing sessions
-tmux kill-session -t shogun
+tmux kill-session -t karo
 tmux kill-session -t multiagent
 
 # Start fresh
@@ -644,8 +827,8 @@ tmux kill-session -t multiagent
 Running `first_setup.sh` automatically adds these aliases to `~/.bashrc`:
 
 ```bash
-alias css='cd /mnt/c/tools/multi-agent-shogun && ./shutsujin_departure.sh'  # Setup + deploy
-alias csm='cd /mnt/c/tools/multi-agent-shogun'                              # Navigate to directory only
+alias css='cd /mnt/c/tools/multi-agent-daimyo && ./shutsujin_departure.sh'  # Setup + deploy
+alias csm='cd /mnt/c/tools/multi-agent-daimyo'                              # Navigate to directory only
 ```
 
 *To apply aliases, run `source ~/.bashrc` or restart your terminal. On WSL, run `wsl --shutdown` in PowerShell first — simply closing the window does not terminate WSL.*
@@ -660,7 +843,7 @@ alias csm='cd /mnt/c/tools/multi-agent-shogun'                              # Na
 <summary><b>Click to expand file structure</b></summary>
 
 ```
-multi-agent-shogun/
+multi-agent-daimyo/
 │
 │  ┌─────────────────── SETUP SCRIPTS ───────────────────┐
 ├── install.bat               # Windows: First-time setup
@@ -669,8 +852,8 @@ multi-agent-shogun/
 │  └────────────────────────────────────────────────────┘
 │
 ├── instructions/             # Agent instruction files
-│   ├── shogun.md             # Commander instructions
-│   ├── karo.md               # Manager instructions
+│   ├── karo.md               # Commander instructions
+│   ├── busho.md              # Manager instructions
 │   └── ashigaru.md           # Worker instructions
 │
 ├── config/
@@ -680,7 +863,7 @@ multi-agent-shogun/
 │   └── <project_id>.yaml   # Full project info (client, tasks, Notion links, etc.)
 │
 ├── queue/                    # Communication files
-│   ├── shogun_to_karo.yaml   # Commands from Shogun to Karo
+│   ├── karo_to_busho.yaml    # Commands from Karo to Busho
 │   ├── tasks/                # Individual worker task files
 │   └── reports/              # Worker reports
 │
@@ -732,7 +915,7 @@ current_tasks:
     status: in_progress
 ```
 
-This separation allows the Shogun system to orchestrate tasks across multiple external projects while keeping project details private and out of version control.
+This separation allows the Karo system to orchestrate tasks across multiple external projects while keeping project details private and out of version control.
 
 ---
 
@@ -782,11 +965,11 @@ tmux attach-session -t multiagent
 
 | Command | Description |
 |---------|-------------|
-| `tmux attach -t shogun` | Connect to Shogun |
+| `tmux attach -t karo` | Connect to Karo |
 | `tmux attach -t multiagent` | Connect to workers |
 | `Ctrl+B` then `0-8` | Switch between panes |
 | `Ctrl+B` then `d` | Detach (leave running) |
-| `tmux kill-session -t shogun` | Stop Shogun session |
+| `tmux kill-session -t karo` | Stop Karo session |
 | `tmux kill-session -t multiagent` | Stop worker sessions |
 
 ### 🖱️ Mouse Support

@@ -1,4 +1,4 @@
-# multi-agent-shogun
+# multi-agent-daimyo
 
 <div align="center">
 
@@ -18,7 +18,7 @@
 
 ## これは何？
 
-**multi-agent-shogun** は、複数の Claude Code インスタンスを同時に実行し、戦国時代の軍制のように統率するシステムです。
+**multi-agent-daimyo** は、複数の Claude Code インスタンスを同時に実行し、戦国時代の軍制のように統率するシステムです。
 
 **なぜ使うのか？**
 - 1つの命令で、8体のAIワーカーが並列で実行
@@ -27,15 +27,15 @@
 - ダッシュボードでリアルタイム進捗確認
 
 ```
-      あなた（上様）
+      あなた（御屋形様）
            │
            ▼ 命令を出す
     ┌─────────────┐
-    │   SHOGUN    │  ← 命令を受け取り、即座に委譲
+    │     KARO    │  ← 命令を受け取り、即座に委譲
     └──────┬──────┘
            │ YAMLファイル + tmux
     ┌──────▼──────┐
-    │    KARO     │  ← タスクをワーカーに分配
+    │    BUSHO    │  ← タスクをワーカーに分配
     └──────┬──────┘
            │
   ┌─┬─┬─┬─┴─┬─┬─┬─┐
@@ -61,9 +61,9 @@
 
 📥 **リポジトリをダウンロード**
 
-[ZIPダウンロード](https://github.com/yohey-w/multi-agent-shogun/archive/refs/heads/main.zip) して `C:\tools\multi-agent-shogun` に展開
+[ZIPダウンロード](https://github.com/yuzame/multi-agent-daimyo/archive/refs/heads/main.zip) して `C:\tools\multi-agent-daimyo` に展開
 
-*または git を使用:* `git clone https://github.com/yohey-w/multi-agent-shogun.git C:\tools\multi-agent-shogun`
+*または git を使用:* `git clone https://github.com/yuzame/multi-agent-daimyo.git C:\tools\multi-agent-daimyo`
 
 </td>
 </tr>
@@ -92,7 +92,7 @@
 🐧 **Ubuntu を開いて以下を実行**（初回のみ）
 
 ```bash
-cd /mnt/c/tools/multi-agent-shogun
+cd /mnt/c/tools/multi-agent-daimyo
 ./first_setup.sh
 ```
 
@@ -121,7 +121,7 @@ cd /mnt/c/tools/multi-agent-shogun
 **Ubuntuターミナル**（WSL）を開いて実行：
 
 ```bash
-cd /mnt/c/tools/multi-agent-shogun
+cd /mnt/c/tools/multi-agent-daimyo
 ./shutsujin_departure.sh
 ```
 
@@ -134,8 +134,8 @@ cd /mnt/c/tools/multi-agent-shogun
 
 ```bash
 # 1. リポジトリをクローン
-git clone https://github.com/yohey-w/multi-agent-shogun.git ~/multi-agent-shogun
-cd ~/multi-agent-shogun
+git clone https://github.com/yuzame/multi-agent-daimyo.git ~/multi-agent-daimyo
+cd ~/multi-agent-daimyo
 
 # 2. スクリプトに実行権限を付与
 chmod +x *.sh
@@ -147,7 +147,7 @@ chmod +x *.sh
 ### 毎日の起動
 
 ```bash
-cd ~/multi-agent-shogun
+cd ~/multi-agent-daimyo
 ./shutsujin_departure.sh
 ```
 
@@ -195,7 +195,7 @@ wsl --install
 - ✅ 次のステップ（`first_setup.sh` の実行方法）を案内
 
 ### `shutsujin_departure.sh` が行うこと：
-- ✅ tmuxセッションを作成（shogun + multiagent）
+- ✅ tmuxセッションを作成（karo + multiagent）
 - ✅ 全エージェントでClaude Codeを起動
 - ✅ 各エージェントに指示書を自動読み込み
 - ✅ キューファイルをリセットして新しい状態に
@@ -229,42 +229,42 @@ wsl --install
 
 | エージェント | 役割 | 数 |
 |-------------|------|-----|
-| 🏯 将軍（Shogun） | 総大将 - あなたの命令を受ける | 1 |
-| 📋 家老（Karo） | 管理者 - タスクを分配 | 1 |
+| 🏯 家老（Karo） | 総大将 - あなたの命令を受ける | 1 |
+| 📋 部将（Busho） | 管理者 - タスクを分配 | 1 |
 | ⚔️ 足軽（Ashigaru） | ワーカー - 並列でタスク実行 | 8 |
 
 tmuxセッションが作成されます：
-- `shogun` - ここに接続してコマンドを出す
+- `karo` - ここに接続してコマンドを出す
 - `multiagent` - ワーカーがバックグラウンドで稼働
 
 ---
 
 ## 📖 基本的な使い方
 
-### Step 1: 将軍に接続
+### Step 1: 家老に接続
 
 `shutsujin_departure.sh` 実行後、全エージェントが自動的に指示書を読み込み、作業準備完了となります。
 
-新しいターミナルを開いて将軍に接続：
+新しいターミナルを開いて家老に接続：
 
 ```bash
-tmux attach-session -t shogun
+tmux attach-session -t karo
 ```
 
 ### Step 2: 最初の命令を出す
 
-将軍は既に初期化済み！そのまま命令を出せます：
+家老は既に初期化済み！そのまま命令を出せます：
 
 ```
 JavaScriptフレームワーク上位5つを調査して比較表を作成せよ
 ```
 
-将軍は：
+家老は：
 1. タスクをYAMLファイルに書き込む
-2. 家老（管理者）に通知
+2. 部将（管理者）に通知
 3. 即座にあなたに制御を返す（待つ必要なし！）
 
-その間、家老はタスクを足軽ワーカーに分配し、並列実行します。
+その間、部将はタスクを足軽ワーカーに分配し、並列実行します。
 
 ### Step 3: 進捗を確認
 
@@ -295,10 +295,10 @@ JavaScriptフレームワーク上位5つを調査して比較表を作成せよ
 
 ### 🔄 2. ノンブロッキングワークフロー
 
-将軍は即座に委譲して、あなたに制御を返します：
+家老は即座に委譲して、あなたに制御を返します：
 
 ```
-あなた: 命令 → 将軍: 委譲 → あなた: 次の命令をすぐ出せる
+あなた: 命令 → 家老: 委譲 → あなた: 次の命令をすぐ出せる
                                     ↓
                     ワーカー: バックグラウンドで実行
                                     ↓
@@ -333,7 +333,7 @@ VSCode拡張のClaude Codeはスクショを貼り付けて事象を説明でき
 screenshot:
   path: "/mnt/c/Users/あなたの名前/Pictures/Screenshots"
 
-# 将軍に伝えるだけ:
+# 家老に伝えるだけ:
 あなた: 「最新のスクショを見ろ」
 あなた: 「スクショ2枚見ろ」
 → AIが即座にスクリーンショットを読み取って分析
@@ -352,7 +352,7 @@ screenshot:
 
 | レイヤー | 場所 | 用途 |
 |---------|------|------|
-| Memory MCP | `memory/shogun_memory.jsonl` | セッションを跨ぐ長期記憶 |
+| Memory MCP | `memory/karo_memory.jsonl` | セッションを跨ぐ長期記憶 |
 | グローバル | `memory/global_context.md` | システム全体の設定、殿の好み |
 | プロジェクト | `context/{project}.md` | プロジェクト固有の知見 |
 
@@ -387,24 +387,207 @@ screenshot:
 
 | エージェント | モデル | 思考モード | 理由 |
 |-------------|--------|----------|------|
-| 将軍 | Opus | 無効 | 委譲とダッシュボード更新に深い推論は不要 |
-| 家老 | デフォルト | 有効 | タスク分配には慎重な判断が必要 |
+| 家老 | Opus | 無効 | 委譲とダッシュボード更新に深い推論は不要 |
+| 部将 | デフォルト | 有効 | タスク分配には慎重な判断が必要 |
 | 足軽 | デフォルト | 有効 | 実装作業にはフル機能が必要 |
 
-将軍は `MAX_THINKING_TOKENS=0` で拡張思考を無効化し、高レベルな判断にはOpusの能力を維持しつつ、レイテンシとコストを削減。
+家老は `MAX_THINKING_TOKENS=0` で拡張思考を無効化し、高レベルな判断にはOpusの能力を維持しつつ、レイテンシとコストを削減。
+
+---
+
+## 🔀 マルチCLI対応
+
+**multi-agent-daimyo** は Claude Code CLI だけでなく、複数のAI CLIをサポートしています。
+
+### サポートされているCLI（コーディングエージェント）
+
+| CLI | 特徴 | OpenAI互換 | 推奨用途 |
+|-----|------|:----------:|------------|
+| **Claude Code CLI** | Opus/Sonnetモデル、MCP統合 | ✅ | 高度な推論が必要なタスク |
+| **Codex CLI** | OpenAI公式、full-autoモード | ✅ | コード生成特化タスク |
+| **Crush CLI** | Charmbracelet製、YOLOモード | ✅ | 軽量タスク、高速処理 |
+| **Goose CLI** | Block製、マルチモデル対応 | ✅ | 柔軟なモデル切替 |
+| **GitHub Copilot CLI** | Claude/GPT-5モデル、GitHub統合 | ❌ | GitHub連携が必要なタスク |
+| **Gemini CLI** | Google AI、1Mトークンコンテキスト | ❌ | 大規模コンテキスト処理 |
+
+> **Note**: OpenAI互換✅のCLIは、GLM、DeepSeek等のOpenAI互換APIをバックエンドとして使用可能です。
+
+### 軍目付（検分役）
+
+| 名前 | 役職 | 特徴 |
+|------|------|------|
+| **工兎（こうと）** | 軍目付 | AIコード検分、セキュリティ分析 (CodeRabbit CLI) |
+
+> **Note**: 工兎は「軍目付」として、指揮系統（家老→部将→足軽）とは独立した検分専門の監察役です。汎用タスクはできず、コード検分のみを担当します。
+
+### 設定方法
+
+`config/settings.yaml` で各エージェントのCLIを指定：
+
+```yaml
+cli:
+  # 全体のデフォルト
+  default: claude
+
+  # エージェント毎の個別設定（オプション）
+  agents:
+    karo:
+      type: claude
+      model: opus
+
+    # Claude Code CLI + GLM Backend（OpenAI互換）
+    ashigaru1:
+      type: claude
+      backend:
+        base_url: "https://open.bigmodel.cn/api/paas/v4"
+        api_key_env: "GLM_API_KEY"
+        model: "glm-4-plus"
+
+    # Codex CLI + DeepSeek Backend（OpenAI互換）
+    ashigaru2:
+      type: codex
+      backend:
+        base_url: "https://api.deepseek.com/v1"
+        api_key_env: "DEEPSEEK_API_KEY"
+        model: "deepseek-coder"
+
+    # Crush CLI
+    ashigaru3:
+      type: crush
+
+    # Goose CLI
+    ashigaru4:
+      type: goose
+
+    # GitHub Copilot CLI
+    ashigaru5:
+      type: copilot
+
+    # Gemini CLI
+    ashigaru6:
+      type: gemini
+      model: gemini-2.5-flash
+```
+
+### コマンドラインから指定
+
+```bash
+# 設定ファイルに従って起動（デフォルト）
+./shutsujin_departure.sh
+
+# 全エージェントでClaude Code CLI を使用
+./shutsujin_departure.sh --claude
+
+# 全エージェントでCodex CLI を使用
+./shutsujin_departure.sh --codex
+
+# 全エージェントでCrush CLI を使用
+./shutsujin_departure.sh --crush
+
+# 全エージェントでGoose CLI を使用
+./shutsujin_departure.sh --goose
+
+# 全エージェントでGitHub Copilot CLI を使用
+./shutsujin_departure.sh --copilot
+
+# 全エージェントでGemini CLI を使用
+./shutsujin_departure.sh --gemini
+```
+
+### 必要な準備
+
+**Claude Code CLI**:
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+**Codex CLI**:
+```bash
+npm install -g @openai/codex
+export OPENAI_API_KEY="your-api-key"
+```
+
+**Crush CLI**:
+```bash
+brew install charmbracelet/tap/crush
+# または
+npm install -g @charmland/crush
+```
+
+**Goose CLI**:
+```bash
+curl -fsSL https://github.com/block/goose/raw/main/download_cli.sh | bash
+```
+
+**GitHub Copilot CLI**:
+```bash
+npm install -g @github/copilot
+# または
+brew install copilot-cli
+```
+
+**Gemini CLI**:
+```bash
+npm install -g @google/gemini-cli
+# または
+brew install gemini-cli
+```
+
+### 軍目付（検分役）のインストール
+
+**工兎（こうと）** - CodeRabbit CLI:
+```bash
+curl -fsSL https://cli.coderabbit.ai/install.sh | sh
+coderabbit auth login
+```
+
+> 足軽はコード実装後に工兎殿に検分を依頼します。検分結果は部将に報告され、部将が修正タスクを分解・再分配します:
+> ```
+> 足軽がコード実装
+>     ↓
+> 足軽: 「工兎殿に検分を依頼し申した」
+>     (coderabbit --prompt-only --type uncommitted)
+>     ↓
+> 足軽が工兎殿の検分結果を部将に報告
+>     ↓
+> 部将が修正タスクを分解
+>     ↓
+> 複数足軽で並列修正
+> ```
+
+### OpenAI互換バックエンドの設定
+
+GLM、DeepSeek等のOpenAI互換APIを使用する場合：
+
+```yaml
+cli:
+  agents:
+    ashigaru1:
+      type: claude  # claude, codex, crush, goose のいずれか
+      backend:
+        base_url: "https://open.bigmodel.cn/api/paas/v4"  # APIエンドポイント
+        api_key_env: "GLM_API_KEY"  # 環境変数名
+        model: "glm-4-plus"  # モデル名
+```
+
+環境変数を設定：
+```bash
+export GLM_API_KEY="your-glm-api-key"
+export DEEPSEEK_API_KEY="your-deepseek-api-key"
+```
 
 ---
 
 ## 🎯 設計思想
 
-### なぜ階層構造（将軍→家老→足軽）なのか
+### なぜ階層構造（家老→部将→足軽）なのか
 
-1. **即座の応答**: 将軍は即座に委譲し、あなたに制御を返す
-2. **並列実行**: 家老が複数の足軽に同時分配
+1. **即座の応答**: 家老は即座に委譲し、あなたに制御を返す
+2. **並列実行**: 部将が複数の足軽に同時分配
 3. **単一責任**: 各役割が明確に分離され、混乱しない
 4. **スケーラビリティ**: 足軽を増やしても構造が崩れない
 5. **障害分離**: 1体の足軽が失敗しても他に影響しない
-6. **人間への報告一元化**: 将軍だけが人間とやり取りするため、情報が整理される
+6. **人間への報告一元化**: 家老だけが人間とやり取りするため、情報が整理される
 
 ### なぜ YAML + send-keys なのか
 
@@ -414,12 +597,12 @@ screenshot:
 4. **デバッグ容易**: 人間がYAMLを直接読んで状況把握できる
 5. **競合回避**: 各足軽に専用ファイルを割り当て
 
-### なぜ dashboard.md は家老のみが更新するのか
+### なぜ dashboard.md は部将のみが更新するのか
 
 1. **単一更新者**: 競合を防ぐため、更新責任者を1人に限定
-2. **情報集約**: 家老は全足軽の報告を受ける立場なので全体像を把握
+2. **情報集約**: 部将は全足軽の報告を受ける立場なので全体像を把握
 3. **一貫性**: すべての更新が1つの品質ゲートを通過
-4. **割り込み防止**: 将軍が更新すると、殿の入力中に割り込む恐れあり
+4. **割り込み防止**: 家老が更新すると、殿の入力中に割り込む恐れあり
 
 ---
 
@@ -428,7 +611,7 @@ screenshot:
 初期状態ではスキルはありません。
 運用中にダッシュボード（dashboard.md）の「スキル化候補」から承認して増やしていきます。
 
-スキルは `/スキル名` で呼び出し可能。将軍に「/スキル名 を実行」と伝えるだけ。
+スキルは `/スキル名` で呼び出し可能。家老に「/スキル名 を実行」と伝えるだけ。
 
 ### スキルの思想
 
@@ -447,7 +630,7 @@ dashboard.md の「スキル化候補」に上がる
     ↓
 殿（あなた）が内容を確認
     ↓
-承認すれば家老に指示してスキルを作成
+承認すれば部将に指示してスキルを作成
 ```
 
 スキルはユーザ主導で増やすもの。自動で増えると管理不能になるため、「これは便利」と判断したものだけを残す。
@@ -486,7 +669,7 @@ claude mcp add sequential-thinking -- npx -y @modelcontextprotocol/server-sequen
 # 5. Memory - セッション間の長期記憶（推奨！）
 # ✅ first_setup.sh で自動設定済み
 # 手動で再設定する場合:
-claude mcp add memory -e MEMORY_FILE_PATH="$PWD/memory/shogun_memory.jsonl" -- npx -y @modelcontextprotocol/server-memory
+claude mcp add memory -e MEMORY_FILE_PATH="$PWD/memory/karo_memory.jsonl" -- npx -y @modelcontextprotocol/server-memory
 ```
 
 ### インストール確認
@@ -507,8 +690,8 @@ claude mcp list
 あなた: 「AIコーディングアシスタント上位5つを調査して比較せよ」
 
 実行される処理:
-1. 将軍が家老に委譲
-2. 家老が割り当て:
+1. 家老が部将に委譲
+2. 部将が割り当て:
    - 足軽1: GitHub Copilotを調査
    - 足軽2: Cursorを調査
    - 足軽3: Claude Codeを調査
@@ -524,7 +707,7 @@ claude mcp list
 あなた: 「このNotionページのプロジェクトでPoC準備: [URL]」
 
 実行される処理:
-1. 家老がMCP経由でNotionコンテンツを取得
+1. 部将がMCP経由でNotionコンテンツを取得
 2. 足軽2: 確認すべき項目をリスト化
 3. 足軽3: 技術的な実現可能性を調査
 4. 足軽4: PoC計画書を作成
@@ -575,7 +758,7 @@ language: en   # 日本語 + 英訳併記
 │  shutsujin_departure.sh                                             │
 │      │                                                              │
 │      ├──▶ tmuxセッションを作成                                       │
-│      │         • "shogun"セッション（1ペイン）                        │
+│      │         • "karo"セッション（1ペイン）                          │
 │      │         • "multiagent"セッション（9ペイン、3x3グリッド）        │
 │      │                                                              │
 │      ├──▶ キューファイルとダッシュボードをリセット                     │
@@ -615,7 +798,7 @@ language: en   # 日本語 + 英訳併記
 **通常の毎日の使用：**
 ```bash
 ./shutsujin_departure.sh          # 全て起動
-tmux attach-session -t shogun     # 接続してコマンドを出す
+tmux attach-session -t karo       # 接続してコマンドを出す
 ```
 
 **デバッグモード（手動制御）：**
@@ -623,14 +806,14 @@ tmux attach-session -t shogun     # 接続してコマンドを出す
 ./shutsujin_departure.sh -s       # セッションのみ作成
 
 # 特定のエージェントでClaude Codeを手動起動
-tmux send-keys -t shogun:0 'claude --dangerously-skip-permissions' Enter
+tmux send-keys -t karo:0 'claude --dangerously-skip-permissions' Enter
 tmux send-keys -t multiagent:0.0 'claude --dangerously-skip-permissions' Enter
 ```
 
 **クラッシュ後の再起動：**
 ```bash
 # 既存セッションを終了
-tmux kill-session -t shogun
+tmux kill-session -t karo
 tmux kill-session -t multiagent
 
 # 新しく起動
@@ -645,8 +828,8 @@ tmux kill-session -t multiagent
 `first_setup.sh` を実行すると、以下のエイリアスが `~/.bashrc` に自動追加されます：
 
 ```bash
-alias css='tmux attach-session -t shogun'      # 将軍ウィンドウの起動
-alias csm='tmux attach-session -t multiagent'  # 家老・足軽ウィンドウの起動
+alias csk='tmux attach-session -t karo'        # 家老ウィンドウの起動
+alias csm='tmux attach-session -t multiagent'  # 部将・足軽ウィンドウの起動
 ```
 
 ※ エイリアスを反映するには `source ~/.bashrc` を実行するか、PowerShellで `wsl --shutdown` してからターミナルを開き直してください。
@@ -661,7 +844,7 @@ alias csm='tmux attach-session -t multiagent'  # 家老・足軽ウィンドウ�
 <summary><b>クリックでファイル構成を展開</b></summary>
 
 ```
-multi-agent-shogun/
+multi-agent-daimyo/
 │
 │  ┌─────────────────── セットアップスクリプト ───────────────────┐
 ├── install.bat               # Windows: 初回セットアップ
@@ -670,8 +853,8 @@ multi-agent-shogun/
 │  └────────────────────────────────────────────────────────────┘
 │
 ├── instructions/             # エージェント指示書
-│   ├── shogun.md             # 将軍の指示書
 │   ├── karo.md               # 家老の指示書
+│   ├── busho.md              # 部将の指示書
 │   └── ashigaru.md           # 足軽の指示書
 │
 ├── config/
@@ -681,7 +864,7 @@ multi-agent-shogun/
 │   └── <project_id>.yaml   # 各プロジェクトの全情報（クライアント、タスク、Notion連携等）
 │
 ├── queue/                    # 通信ファイル
-│   ├── shogun_to_karo.yaml   # 将軍から家老へのコマンド
+│   ├── karo_to_busho.yaml    # 家老から部将へのコマンド
 │   ├── tasks/                # 各ワーカーのタスクファイル
 │   └── reports/              # ワーカーレポート
 │
@@ -733,7 +916,7 @@ current_tasks:
     status: in_progress
 ```
 
-この分離設計により、将軍システムは複数の外部プロジェクトを横断的に統率しつつ、プロジェクトの詳細情報はバージョン管理の対象外に保つことができる。
+この分離設計により、家老システムは複数の外部プロジェクトを横断的に統率しつつ、プロジェクトの詳細情報はバージョン管理の対象外に保つことができる。
 
 ---
 
@@ -783,11 +966,11 @@ tmux attach-session -t multiagent
 
 | コマンド | 説明 |
 |----------|------|
-| `tmux attach -t shogun` | 将軍に接続 |
+| `tmux attach -t karo` | 家老に接続 |
 | `tmux attach -t multiagent` | ワーカーに接続 |
 | `Ctrl+B` の後 `0-8` | ペイン間を切り替え |
 | `Ctrl+B` の後 `d` | デタッチ（実行継続） |
-| `tmux kill-session -t shogun` | 将軍セッションを停止 |
+| `tmux kill-session -t karo` | 家老セッションを停止 |
 | `tmux kill-session -t multiagent` | ワーカーセッションを停止 |
 
 ### 🖱️ マウス操作

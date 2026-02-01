@@ -1,0 +1,230 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# multi-agent-daimyo 設定ファイル
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# 言語設定
+# ja: 日本語（戦国風日本語のみ、併記なし）
+# en: 英語（戦国風日本語 + 英訳併記）
+# その他の言語コード（es, zh, ko, fr, de 等）も対応
+language: ja
+
+# シェル設定
+# bash: bash用プロンプト（デフォルト）
+# zsh: zsh用プロンプト
+shell: bash
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CLI設定（マルチAI CLI対応）
+# ═══════════════════════════════════════════════════════════════════════════════
+# 対応CLI（コーディングエージェント）:
+#   - claude: Claude Code CLI (Anthropic) - OpenAI互換バックエンド対応
+#   - codex: OpenAI Codex CLI - OpenAI互換バックエンド対応
+#   - crush: Charm Crush CLI - OpenAI互換バックエンド対応
+#   - goose: Block Goose CLI - OpenAI互換バックエンド対応
+#   - copilot: GitHub Copilot CLI
+#   - gemini: Google Gemini CLI
+#
+# OpenAI互換バックエンド（GLM, DeepSeek等）:
+#   claude, codex, crush, goose で backend 設定により使用可能
+#
+# カテゴリ（categories）:
+#   各足軽に割り当て可能なタスクカテゴリを指定。部将がタスク割り振り時に参照。
+#   "ALL" を指定すると全カテゴリのタスクを受け付ける。
+# ═══════════════════════════════════════════════════════════════════════════════
+cli:
+  # デフォルトCLI（全エージェントに適用）
+  default: claude
+
+  # エージェント毎の個別設定（オプション）
+  # agents:
+  #   # ───────────────────────────────────────────────────────────────────────
+  #   # 家老の設定例（Claude Code + Opus）
+  #   # ───────────────────────────────────────────────────────────────────────
+  #   karo:
+  #     type: claude
+  #     model: opus
+  #     env:
+  #       MAX_THINKING_TOKENS: "0"
+  #
+  #   # ───────────────────────────────────────────────────────────────────────
+  #   # 部将の設定例（Claude Code）
+  #   # ───────────────────────────────────────────────────────────────────────
+  #   busho:
+  #     type: claude
+  #
+  #   # ───────────────────────────────────────────────────────────────────────
+  #   # 足軽1: Claude Code + GLM Backend（単純タスク向け）
+  #   # ───────────────────────────────────────────────────────────────────────
+  #   ashigaru1:
+  #     type: claude
+  #     backend:
+  #       base_url: "https://open.bigmodel.cn/api/paas/v4"
+  #       api_key_env: "GLM_API_KEY"
+  #       model: "glm-4-plus"
+  #     categories: [coding_simple, docs_general]
+  #
+  #   # ───────────────────────────────────────────────────────────────────────
+  #   # 足軽2: Codex CLI + DeepSeek Backend（コーディング特化）
+  #   # ───────────────────────────────────────────────────────────────────────
+  #   ashigaru2:
+  #     type: codex
+  #     backend:
+  #       base_url: "https://api.deepseek.com/v1"
+  #       api_key_env: "DEEPSEEK_API_KEY"
+  #       model: "deepseek-coder"
+  #     categories: [coding_standard, coding_simple, analysis_debug]
+  #
+  #   # ───────────────────────────────────────────────────────────────────────
+  #   # 足軽3: Crush CLI（軽量タスク向け）
+  #   # ───────────────────────────────────────────────────────────────────────
+  #   ashigaru3:
+  #     type: crush
+  #     categories: [coding_simple, docs_general]
+  #
+  #   # ───────────────────────────────────────────────────────────────────────
+  #   # 足軽4: Goose CLI + GLM Backend（単純タスク向け）
+  #   # ───────────────────────────────────────────────────────────────────────
+  #   ashigaru4:
+  #     type: goose
+  #     backend:
+  #       base_url: "https://open.bigmodel.cn/api/paas/v4"
+  #       api_key_env: "GLM_API_KEY"
+  #       model: "glm-4-plus"
+  #     categories: [coding_simple, docs_general]
+  #
+  #   # ───────────────────────────────────────────────────────────────────────
+  #   # 足軽5: GitHub Copilot CLI（GitHub連携コーディング）
+  #   # ───────────────────────────────────────────────────────────────────────
+  #   ashigaru5:
+  #     type: copilot
+  #     categories: [coding_standard, coding_simple]
+  #
+  #   # ───────────────────────────────────────────────────────────────────────
+  #   # 足軽6: Claude Code（万能型）
+  #   # ───────────────────────────────────────────────────────────────────────
+  #   ashigaru6:
+  #     type: claude
+  #     categories: [ALL]
+  #
+  #   # ───────────────────────────────────────────────────────────────────────
+  #   # 足軽7: Gemini CLI（標準タスク向け）
+  #   # ───────────────────────────────────────────────────────────────────────
+  #   ashigaru7:
+  #     type: gemini
+  #     model: gemini-2.5-flash
+  #     categories: [coding_standard, docs_general, analysis_debug]
+  #
+  #   # ───────────────────────────────────────────────────────────────────────
+  #   # 足軽8: Claude Code（標準タスク向け）
+  #   # ───────────────────────────────────────────────────────────────────────
+  #   ashigaru8:
+  #     type: claude
+  #     categories: [coding_standard, docs_general]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CodeRabbit設定（レビューツール - 家老-部将-足軽とは別枠）
+# ═══════════════════════════════════════════════════════════════════════════════
+# CodeRabbitは汎用コーディングCLIではなく、レビュー専用ツール。
+# 足軽がコード実装後に呼び出して使用する。
+#
+# 使用パターン:
+#   1. 足軽がコードを実装
+#   2. 足軽が coderabbit --prompt-only を実行（バックグラウンド、7-30分）
+#   3. レビュー結果を受け取り、問題を修正
+#
+# インストール:
+#   curl -fsSL https://cli.coderabbit.ai/install.sh | sh
+#   coderabbit auth login
+# ═══════════════════════════════════════════════════════════════════════════════
+# coderabbit:
+#   enabled: true
+#   # レビューモード: interactive, plain, prompt-only
+#   mode: prompt-only
+#   # レビュータイプ: all, committed, uncommitted
+#   review_type: uncommitted
+#   # ベースブランチ（オプション）
+#   # base_branch: main
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# タスクカテゴリ定義（部将がタスク割り振り時に参照）
+# ═══════════════════════════════════════════════════════════════════════════════
+# 各足軽の categories に指定可能なカテゴリ一覧。
+# 部将はタスクを分析し、必要なカテゴリを持つ足軽にのみ割り当てる。
+#
+# カテゴリ階層:
+#   development（開発）
+#     ├─ coding_advanced    高度なコーディング（設計、リファクタ、複雑なロジック）
+#     ├─ coding_standard    標準的なコーディング（機能実装、バグ修正）
+#     └─ coding_simple      単純なコーディング（定型コード、ファイル作成）
+#   documentation（ドキュメント）
+#     ├─ docs_technical     技術文書（API仕様、設計書）
+#     └─ docs_general       一般文書（README、コメント、翻訳）
+#   review（レビュー）
+#     ├─ review_code        コードレビュー
+#     └─ review_security    セキュリティ監査
+#   analysis（分析）
+#     ├─ analysis_design    設計分析、アーキテクチャ検討
+#     └─ analysis_debug     デバッグ、問題調査
+# ═══════════════════════════════════════════════════════════════════════════════
+categories:
+  # 開発系
+  coding_advanced:
+    description: "高度なコーディング（設計、リファクタリング、複雑なアルゴリズム）"
+    requires: "高い推論能力"
+  coding_standard:
+    description: "標準的なコーディング（機能実装、バグ修正、テスト作成）"
+    requires: "標準的なコーディング能力"
+  coding_simple:
+    description: "単純なコーディング（定型コード生成、ファイル作成、軽微な修正）"
+    requires: "基本的なコーディング能力"
+
+  # ドキュメント系
+  docs_technical:
+    description: "技術文書（API仕様書、設計書、アーキテクチャ文書）"
+    requires: "技術理解と文書作成能力"
+  docs_general:
+    description: "一般文書（README、コメント追加、翻訳、要約）"
+    requires: "基本的な文書作成能力"
+
+  # レビュー系
+  review_code:
+    description: "コードレビュー（品質チェック、ベストプラクティス確認）"
+    requires: "コード品質の判断能力"
+  review_security:
+    description: "セキュリティ監査（脆弱性検出、セキュリティベストプラクティス）"
+    requires: "セキュリティ知識"
+
+  # 分析系
+  analysis_design:
+    description: "設計分析（アーキテクチャ検討、技術選定、トレードオフ分析）"
+    requires: "高い推論能力と技術知識"
+  analysis_debug:
+    description: "デバッグ・問題調査（エラー分析、原因特定、解決策提案）"
+    requires: "問題解決能力"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# スキル設定
+# ═══════════════════════════════════════════════════════════════════════════════
+skill:
+  # グローバルスキル保存先（スキル名に karo- プレフィックスを付けて保存）
+  save_path: "~/.claude/skills/"
+
+  # ローカルスキル保存先（このプロジェクト専用）
+  local_path: "~/multi-agent-daimyo/skills/"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# スクリーンショット設定（WSL環境用）
+# ═══════════════════════════════════════════════════════════════════════════════
+screenshot:
+  # Windows側のパス（{{USERNAME}} は自動置換）
+  windows_path: "C:\\Users\\{{USERNAME}}\\Pictures\\Screenshots"
+
+  # WSLからアクセスするパス
+  path: "/mnt/c/Users/{{USERNAME}}/Pictures/Screenshots"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ログ設定
+# ═══════════════════════════════════════════════════════════════════════════════
+logging:
+  level: info  # debug | info | warn | error
+  path: "~/multi-agent-daimyo/logs/"

@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🏯 multi-agent-shogun 出陣スクリプト（毎日の起動用）
+# 🏯 multi-agent-daimyo 出陣スクリプト（毎日の起動用）
 # Daily Deployment Script for Multi-Agent Orchestration System
 #
 # 使用方法:
@@ -12,6 +12,14 @@ set -e
 # スクリプトのディレクトリを取得
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
+
+# CLIアダプターを読み込み（存在する場合のみ）
+if [ -f "${SCRIPT_DIR}/lib/cli_adapter.sh" ]; then
+    source "${SCRIPT_DIR}/lib/cli_adapter.sh"
+    CLI_ADAPTER_AVAILABLE=true
+else
+    CLI_ADAPTER_AVAILABLE=false
+fi
 
 # 言語設定を読み取り（デフォルト: ja）
 LANG_SETTING="ja"
@@ -74,6 +82,7 @@ generate_prompt() {
 SETUP_ONLY=false
 OPEN_TERMINAL=false
 SHELL_OVERRIDE=""
+FORCE_CLI=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -83,6 +92,30 @@ while [[ $# -gt 0 ]]; do
             ;;
         -t|--terminal)
             OPEN_TERMINAL=true
+            shift
+            ;;
+        --claude)
+            FORCE_CLI="claude"
+            shift
+            ;;
+        --copilot)
+            FORCE_CLI="copilot"
+            shift
+            ;;
+        --codex)
+            FORCE_CLI="codex"
+            shift
+            ;;
+        --crush)
+            FORCE_CLI="crush"
+            shift
+            ;;
+        --goose)
+            FORCE_CLI="goose"
+            shift
+            ;;
+        --gemini)
+            FORCE_CLI="gemini"
             shift
             ;;
         -shell|--shell)
@@ -96,27 +129,38 @@ while [[ $# -gt 0 ]]; do
             ;;
         -h|--help)
             echo ""
-            echo "🏯 multi-agent-shogun 出陣スクリプト"
+            echo "🏯 multi-agent-daimyo 出陣スクリプト"
             echo ""
             echo "使用方法: ./shutsujin_departure.sh [オプション]"
             echo ""
             echo "オプション:"
-            echo "  -s, --setup-only    tmuxセッションのセットアップのみ（Claude起動なし）"
+            echo "  -s, --setup-only    tmuxセッションのセットアップのみ（AI CLI起動なし）"
             echo "  -t, --terminal      Windows Terminal で新しいタブを開く"
+            echo "  --claude            Claude Code を強制使用（設定ファイルを無視）"
+            echo "  --copilot           GitHub Copilot CLI を強制使用"
+            echo "  --codex             Codex CLI を強制使用"
+            echo "  --crush             Crush CLI を強制使用（Charmbracelet）"
+            echo "  --goose             Goose CLI を強制使用（Block）"
+            echo "  --gemini            Gemini CLI を強制使用"
             echo "  -shell, --shell SH  シェルを指定（bash または zsh）"
             echo "                      未指定時は config/settings.yaml の設定を使用"
             echo "  -h, --help          このヘルプを表示"
             echo ""
+            echo "OpenAI互換バックエンド（GLM等）:"
+            echo "  settings.yaml で backend 設定を使用してください"
+            echo ""
             echo "例:"
-            echo "  ./shutsujin_departure.sh              # 全エージェント起動（通常の出陣）"
-            echo "  ./shutsujin_departure.sh -s           # セットアップのみ（手動でClaude起動）"
+            echo "  ./shutsujin_departure.sh              # 設定ファイルに従って起動"
+            echo "  ./shutsujin_departure.sh --claude     # Claude Code で起動"
+            echo "  ./shutsujin_departure.sh --crush      # Crush CLI で起動"
+            echo "  ./shutsujin_departure.sh -s           # セットアップのみ（手動でCLI起動）"
             echo "  ./shutsujin_departure.sh -t           # 全エージェント起動 + ターミナルタブ展開"
             echo "  ./shutsujin_departure.sh -shell bash  # bash用プロンプトで起動"
             echo "  ./shutsujin_departure.sh -shell zsh   # zsh用プロンプトで起動"
             echo ""
             echo "エイリアス:"
-            echo "  csst  → cd /mnt/c/tools/multi-agent-shogun && ./shutsujin_departure.sh"
-            echo "  css   → tmux attach-session -t shogun"
+            echo "  csst  → cd /mnt/c/tools/multi-agent-daimyo && ./shutsujin_departure.sh"
+            echo "  csk   → tmux attach-session -t karo"
             echo "  csm   → tmux attach-session -t multiagent"
             echo ""
             exit 0
@@ -190,9 +234,9 @@ ASHIGARU_EOF
     # システム情報
     # ═══════════════════════════════════════════════════════════════════════════
     echo -e "\033[1;33m  ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\033[0m"
-    echo -e "\033[1;33m  ┃\033[0m  \033[1;37m🏯 multi-agent-shogun\033[0m  〜 \033[1;36m戦国マルチエージェント統率システム\033[0m 〜           \033[1;33m┃\033[0m"
+    echo -e "\033[1;33m  ┃\033[0m  \033[1;37m🏯 multi-agent-daimyo\033[0m  〜 \033[1;36m戦国マルチエージェント統率システム\033[0m 〜           \033[1;33m┃\033[0m"
     echo -e "\033[1;33m  ┃\033[0m                                                                           \033[1;33m┃\033[0m"
-    echo -e "\033[1;33m  ┃\033[0m    \033[1;35m将軍\033[0m: プロジェクト統括    \033[1;31m家老\033[0m: タスク管理    \033[1;34m足軽\033[0m: 実働部隊×8      \033[1;33m┃\033[0m"
+    echo -e "\033[1;33m  ┃\033[0m    \033[1;35m家老\033[0m: プロジェクト統括    \033[1;31m部将\033[0m: タスク管理    \033[1;34m足軽\033[0m: 実働部隊×8      \033[1;33m┃\033[0m"
     echo -e "\033[1;33m  ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\033[0m"
     echo ""
 }
@@ -208,7 +252,7 @@ echo ""
 # ═══════════════════════════════════════════════════════════════════════════════
 log_info "🧹 既存の陣を撤収中..."
 tmux kill-session -t multiagent 2>/dev/null && log_info "  └─ multiagent陣、撤収完了" || log_info "  └─ multiagent陣は存在せず"
-tmux kill-session -t shogun 2>/dev/null && log_info "  └─ shogun本陣、撤収完了" || log_info "  └─ shogun本陣は存在せず"
+tmux kill-session -t karo 2>/dev/null && log_info "  └─ karo本陣、撤収完了" || log_info "  └─ karo本陣は存在せず"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # STEP 1.5: 前回記録のバックアップ（内容がある場合のみ）
@@ -227,7 +271,7 @@ if [ "$NEED_BACKUP" = true ]; then
     cp "./dashboard.md" "$BACKUP_DIR/" 2>/dev/null || true
     cp -r "./queue/reports" "$BACKUP_DIR/" 2>/dev/null || true
     cp -r "./queue/tasks" "$BACKUP_DIR/" 2>/dev/null || true
-    cp "./queue/shogun_to_karo.yaml" "$BACKUP_DIR/" 2>/dev/null || true
+    cp "./queue/karo_to_busho.yaml" "$BACKUP_DIR/" 2>/dev/null || true
     log_info "📦 前回の記録をバックアップ: $BACKUP_DIR"
 fi
 
@@ -266,11 +310,11 @@ EOF
 done
 
 # キューファイルリセット
-cat > ./queue/shogun_to_karo.yaml << 'EOF'
+cat > ./queue/karo_to_busho.yaml << 'EOF'
 queue: []
 EOF
 
-cat > ./queue/karo_to_ashigaru.yaml << 'EOF'
+cat > ./queue/busho_to_ashigaru.yaml << 'EOF'
 assignments:
   ashigaru1:
     task_id: null
@@ -384,7 +428,7 @@ log_success "  └─ ダッシュボード初期化完了 (言語: $LANG_SETTIN
 echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# STEP 4: multiagentセッション作成（9ペイン：karo + ashigaru1-8）
+# STEP 4: multiagentセッション作成（9ペイン：busho + ashigaru1-8）
 # ═══════════════════════════════════════════════════════════════════════════════
 # tmux の存在確認
 if ! command -v tmux &> /dev/null; then
@@ -401,7 +445,7 @@ if ! command -v tmux &> /dev/null; then
     exit 1
 fi
 
-log_war "⚔️ 家老・足軽の陣を構築中（9名配備）..."
+log_war "⚔️ 部将・足軽の陣を構築中（9名配備）..."
 
 # 最初のペイン作成
 if ! tmux new-session -d -s multiagent -n "agents" 2>/dev/null; then
@@ -438,9 +482,9 @@ tmux select-pane -t "multiagent:0.6"
 tmux split-window -v
 tmux split-window -v
 
-# ペインタイトル設定（0: karo, 1-8: ashigaru1-8）
-PANE_TITLES=("karo" "ashigaru1" "ashigaru2" "ashigaru3" "ashigaru4" "ashigaru5" "ashigaru6" "ashigaru7" "ashigaru8")
-# 色設定（karo: 赤, ashigaru: 青）
+# ペインタイトル設定（0: busho, 1-8: ashigaru1-8）
+PANE_TITLES=("busho" "ashigaru1" "ashigaru2" "ashigaru3" "ashigaru4" "ashigaru5" "ashigaru6" "ashigaru7" "ashigaru8")
+# 色設定（busho: 赤, ashigaru: 青）
 PANE_COLORS=("red" "blue" "blue" "blue" "blue" "blue" "blue" "blue" "blue")
 
 for i in {0..8}; do
@@ -449,66 +493,166 @@ for i in {0..8}; do
     tmux send-keys -t "multiagent:0.$i" "cd \"$(pwd)\" && export PS1='${PROMPT_STR}' && clear" Enter
 done
 
-log_success "  └─ 家老・足軽の陣、構築完了"
+log_success "  └─ 部将・足軽の陣、構築完了"
 echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# STEP 5: shogunセッション作成（1ペイン）
+# STEP 5: karoセッション作成（1ペイン）
 # ═══════════════════════════════════════════════════════════════════════════════
-log_war "👑 将軍の本陣を構築中..."
-if ! tmux new-session -d -s shogun 2>/dev/null; then
+log_war "👑 家老の本陣を構築中..."
+if ! tmux new-session -d -s karo 2>/dev/null; then
     echo ""
     echo "  ╔════════════════════════════════════════════════════════════╗"
-    echo "  ║  [ERROR] Failed to create tmux session 'shogun'          ║"
-    echo "  ║  tmux セッション 'shogun' の作成に失敗しました           ║"
+    echo "  ║  [ERROR] Failed to create tmux session 'karo'            ║"
+    echo "  ║  tmux セッション 'karo' の作成に失敗しました             ║"
     echo "  ╠════════════════════════════════════════════════════════════╣"
     echo "  ║  An existing session may be running.                     ║"
     echo "  ║  既存セッションが残っている可能性があります              ║"
     echo "  ║                                                          ║"
     echo "  ║  Check: tmux ls                                          ║"
-    echo "  ║  Kill:  tmux kill-session -t shogun                      ║"
+    echo "  ║  Kill:  tmux kill-session -t karo                        ║"
     echo "  ╚════════════════════════════════════════════════════════════╝"
     echo ""
     exit 1
 fi
-SHOGUN_PROMPT=$(generate_prompt "将軍" "magenta" "$SHELL_SETTING")
-tmux send-keys -t shogun "cd \"$(pwd)\" && export PS1='${SHOGUN_PROMPT}' && clear" Enter
-tmux select-pane -t shogun:0.0 -P 'bg=#002b36'  # 将軍の Solarized Dark
+KARO_PROMPT=$(generate_prompt "家老" "magenta" "$SHELL_SETTING")
+tmux send-keys -t karo "cd \"$(pwd)\" && export PS1='${KARO_PROMPT}' && clear" Enter
+tmux select-pane -t karo:0.0 -P 'bg=#002b36'  # 家老の Solarized Dark
 
-log_success "  └─ 将軍の本陣、構築完了"
+log_success "  └─ 家老の本陣、構築完了"
 echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# STEP 6: Claude Code 起動（--setup-only でスキップ）
+# STEP 5.5: 足軽名簿の自動生成（マルチCLIモード時のみ）
+# ═══════════════════════════════════════════════════════════════════════════════
+if [ "$CLI_ADAPTER_AVAILABLE" = true ] && [ -f "./config/settings.yaml" ]; then
+    log_info "📋 足軽名簿を生成中..."
+    generate_agent_roster "./config/settings.yaml" "./status/agent_roster.md"
+    log_success "  └─ status/agent_roster.md 生成完了"
+    echo ""
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# STEP 6: AI CLI 起動（--setup-only でスキップ）
 # ═══════════════════════════════════════════════════════════════════════════════
 if [ "$SETUP_ONLY" = false ]; then
-    # Claude Code CLI の存在チェック
-    if ! command -v claude &> /dev/null; then
-        log_info "⚠️  claude コマンドが見つかりません"
-        echo "  first_setup.sh を再実行してください:"
-        echo "    ./first_setup.sh"
-        exit 1
+    if [ "$CLI_ADAPTER_AVAILABLE" = true ]; then
+        # ═══════════════════════════════════════════════════════════════════════════
+        # マルチCLI対応モード
+        # ═══════════════════════════════════════════════════════════════════════════
+        CONFIG_FILE="./config/settings.yaml"
+
+        log_war "👑 全軍にAI CLIを召喚中..."
+
+        # 家老
+        log_info "  ├─ 家老を召喚中..."
+
+        if [ -n "$FORCE_CLI" ]; then
+            KARO_CLI="$FORCE_CLI"
+        else
+            KARO_CLI=$(get_cli_type "karo" "$CONFIG_FILE")
+        fi
+
+        if ! validate_cli_availability "$KARO_CLI"; then
+            echo "  家老のCLI ($KARO_CLI) が利用できません"
+            exit 1
+        fi
+
+        KARO_CMD=$(build_cli_command "karo" "$KARO_CLI" "$CONFIG_FILE")
+
+        # 家老固有の環境変数設定（Claude Code の場合）
+        if [ "$KARO_CLI" = "claude" ]; then
+            if ! echo "$KARO_CMD" | grep -q "MAX_THINKING_TOKENS"; then
+                KARO_CMD="MAX_THINKING_TOKENS=0 $KARO_CMD"
+            fi
+            if ! echo "$KARO_CMD" | grep -q -- "--model"; then
+                KARO_CMD=$(echo "$KARO_CMD" | sed 's/claude /claude --model opus /')
+            fi
+        fi
+
+        tmux send-keys -t karo "$KARO_CMD"
+        tmux send-keys -t karo Enter
+
+        CLI_ICON=$(get_cli_icon "$KARO_CLI")
+        CLI_NAME=$(get_cli_display_name "$KARO_CLI")
+        log_info "  │  └─ 家老、召喚完了 $CLI_ICON ($CLI_NAME)"
+
+        # Copilot/GLM等用指示書を生成
+        if [ "$KARO_CLI" != "claude" ]; then
+            generate_cli_instructions "karo" "$KARO_CLI" "./instructions" "./.github/copilot-instructions-karo.md" 2>/dev/null || true
+        fi
+
+        sleep 1
+
+        # 部将 + 足軽（9ペイン）
+        log_info "  ├─ 部将・足軽を召喚中..."
+        AGENT_NAMES=("busho" "ashigaru1" "ashigaru2" "ashigaru3" "ashigaru4" "ashigaru5" "ashigaru6" "ashigaru7" "ashigaru8")
+
+        for i in {0..8}; do
+            AGENT_NAME="${AGENT_NAMES[$i]}"
+
+            if [ -n "$FORCE_CLI" ]; then
+                AGENT_CLI="$FORCE_CLI"
+            else
+                AGENT_CLI=$(get_cli_type "$AGENT_NAME" "$CONFIG_FILE")
+            fi
+
+            if ! validate_cli_availability "$AGENT_CLI"; then
+                echo "  $AGENT_NAME のCLI ($AGENT_CLI) が利用できません"
+                exit 1
+            fi
+
+            AGENT_CMD=$(build_cli_command "$AGENT_NAME" "$AGENT_CLI" "$CONFIG_FILE")
+
+            tmux send-keys -t "multiagent:0.$i" "$AGENT_CMD"
+            tmux send-keys -t "multiagent:0.$i" Enter
+
+            # CLI固有の指示書を生成
+            if [ "$AGENT_CLI" != "claude" ]; then
+                generate_cli_instructions "$AGENT_NAME" "$AGENT_CLI" "./instructions" "./.github/copilot-instructions-${AGENT_NAME}.md" 2>/dev/null || true
+            fi
+        done
+
+        log_info "  └─ 部将・足軽、召喚完了"
+
+        # CLIタイプに応じた起動完了メッセージ
+        CLI_ICON=$(get_cli_icon "$KARO_CLI")
+        CLI_NAME=$(get_cli_display_name "$KARO_CLI")
+        log_success "✅ 全軍 $CLI_NAME 起動完了 $CLI_ICON"
+        echo ""
+    else
+        # ═══════════════════════════════════════════════════════════════════════════
+        # 従来モード（後方互換）
+        # ═══════════════════════════════════════════════════════════════════════════
+        if ! command -v claude &> /dev/null; then
+            log_info "⚠️  claude コマンドが見つかりません"
+            echo "  first_setup.sh を再実行してください:"
+            echo "    ./first_setup.sh"
+            exit 1
+        fi
+
+        # 従来モードでは常にClaude Codeを使用
+        KARO_CLI="claude"
+
+        log_war "👑 全軍に Claude Code を召喚中..."
+
+        # 家老
+        tmux send-keys -t karo "MAX_THINKING_TOKENS=0 claude --model opus --dangerously-skip-permissions"
+        tmux send-keys -t karo Enter
+        log_info "  └─ 家老、召喚完了"
+
+        sleep 1
+
+        # 部将 + 足軽（9ペイン）
+        for i in {0..8}; do
+            tmux send-keys -t "multiagent:0.$i" "claude --dangerously-skip-permissions"
+            tmux send-keys -t "multiagent:0.$i" Enter
+        done
+        log_info "  └─ 部将・足軽、召喚完了"
+
+        log_success "✅ 全軍 Claude Code 起動完了"
+        echo ""
     fi
-
-    log_war "👑 全軍に Claude Code を召喚中..."
-
-    # 将軍
-    tmux send-keys -t shogun "MAX_THINKING_TOKENS=0 claude --model opus --dangerously-skip-permissions"
-    tmux send-keys -t shogun Enter
-    log_info "  └─ 将軍、召喚完了"
-
-    # 少し待機（安定のため）
-    sleep 1
-
-    # 家老 + 足軽（9ペイン）
-    for i in {0..8}; do
-        tmux send-keys -t "multiagent:0.$i" "claude --dangerously-skip-permissions"
-        tmux send-keys -t "multiagent:0.$i" Enter
-    done
-    log_info "  └─ 家老・足軽、召喚完了"
-
-    log_success "✅ 全軍 Claude Code 起動完了"
-    echo ""
 
     # ═══════════════════════════════════════════════════════════════════════════
     # STEP 6.5: 各エージェントに指示書を読み込ませる
@@ -581,27 +725,44 @@ NINJA_EOF
     echo -e "                               \033[0;36m[ASCII Art: syntax-samurai/ryu - CC0 1.0 Public Domain]\033[0m"
     echo ""
 
-    echo "  Claude Code の起動を待機中（最大30秒）..."
+    # CLIタイプに応じた起動待機メッセージ
+    if [ "$KARO_CLI" = "claude" ]; then
+        echo "  Claude Code の起動を待機中（最大30秒）..."
+    else
+        CLI_NAME=$(get_cli_display_name "$KARO_CLI" 2>/dev/null || echo "$KARO_CLI")
+        echo "  $CLI_NAME の起動を待機中（最大30秒）..."
+    fi
 
-    # 将軍の起動を確認（最大30秒待機）
+    # 家老の起動を確認（最大30秒待機）
     for i in {1..30}; do
-        if tmux capture-pane -t shogun -p | grep -q "bypass permissions"; then
-            echo "  └─ 将軍の Claude Code 起動確認完了（${i}秒）"
-            break
+        # CLIタイプに応じた起動確認
+        if [ "$KARO_CLI" = "claude" ]; then
+            # Claude Codeは"bypass permissions"メッセージをチェック
+            if tmux capture-pane -t karo -p | grep -q "bypass permissions"; then
+                echo "  └─ 家老の Claude Code 起動確認完了（${i}秒）"
+                break
+            fi
+        else
+            # その他のCLIはプロンプト表示をチェック
+            if tmux capture-pane -t karo -p | grep -q -E "(>|❯|$)"; then
+                CLI_NAME=$(get_cli_display_name "$KARO_CLI" 2>/dev/null || echo "$KARO_CLI")
+                echo "  └─ 家老の $CLI_NAME 起動確認完了（${i}秒）"
+                break
+            fi
         fi
         sleep 1
     done
 
-    # 将軍に指示書を読み込ませる
-    log_info "  └─ 将軍に指示書を伝達中..."
-    tmux send-keys -t shogun "instructions/shogun.md を読んで役割を理解せよ。"
-    sleep 0.5
-    tmux send-keys -t shogun Enter
-
     # 家老に指示書を読み込ませる
-    sleep 2
     log_info "  └─ 家老に指示書を伝達中..."
-    tmux send-keys -t "multiagent:0.0" "instructions/karo.md を読んで役割を理解せよ。"
+    tmux send-keys -t karo "instructions/karo.md を読んで役割を理解せよ。"
+    sleep 0.5
+    tmux send-keys -t karo Enter
+
+    # 部将に指示書を読み込ませる
+    sleep 2
+    log_info "  └─ 部将に指示書を伝達中..."
+    tmux send-keys -t "multiagent:0.0" "instructions/busho.md を読んで役割を理解せよ。"
     sleep 0.5
     tmux send-keys -t "multiagent:0.0" Enter
 
@@ -633,15 +794,15 @@ echo "  ┌───────────────────────
 echo "  │  📋 布陣図 (Formation)                                   │"
 echo "  └──────────────────────────────────────────────────────────┘"
 echo ""
-echo "     【shogunセッション】将軍の本陣"
+echo "     【karoセッション】家老の本陣"
 echo "     ┌─────────────────────────────┐"
-echo "     │  Pane 0: 将軍 (SHOGUN)      │  ← 総大将・プロジェクト統括"
+echo "     │  Pane 0: 家老 (KARO)        │  ← 総大将・プロジェクト統括"
 echo "     └─────────────────────────────┘"
 echo ""
-echo "     【multiagentセッション】家老・足軽の陣（3x3 = 9ペイン）"
+echo "     【multiagentセッション】部将・足軽の陣（3x3 = 9ペイン）"
 echo "     ┌─────────┬─────────┬─────────┐"
-echo "     │  karo   │ashigaru3│ashigaru6│"
-echo "     │  (家老) │ (足軽3) │ (足軽6) │"
+echo "     │  busho  │ashigaru3│ashigaru6│"
+echo "     │  (部将) │ (足軽3) │ (足軽6) │"
 echo "     ├─────────┼─────────┼─────────┤"
 echo "     │ashigaru1│ashigaru4│ashigaru7│"
 echo "     │ (足軽1) │ (足軽4) │ (足軽7) │"
@@ -658,28 +819,61 @@ echo "  ╚═══════════════════════
 echo ""
 
 if [ "$SETUP_ONLY" = true ]; then
-    echo "  ⚠️  セットアップのみモード: Claude Codeは未起動です"
-    echo ""
-    echo "  手動でClaude Codeを起動するには:"
-    echo "  ┌──────────────────────────────────────────────────────────┐"
-    echo "  │  # 将軍を召喚                                            │"
-    echo "  │  tmux send-keys -t shogun 'claude --dangerously-skip-permissions' Enter │"
-    echo "  │                                                          │"
-    echo "  │  # 家老・足軽を一斉召喚                                   │"
-    echo "  │  for i in {0..8}; do \\                                   │"
-    echo "  │    tmux send-keys -t multiagent:0.\$i \\                   │"
-    echo "  │      'claude --dangerously-skip-permissions' Enter       │"
-    echo "  │  done                                                    │"
-    echo "  └──────────────────────────────────────────────────────────┘"
+    # セットアップのみモードでもCLIタイプを判定
+    if [ -z "$KARO_CLI" ]; then
+        if [ -n "$FORCE_CLI" ]; then
+            KARO_CLI="$FORCE_CLI"
+        elif [ "$CLI_ADAPTER_AVAILABLE" = true ] && [ -f "./config/settings.yaml" ]; then
+            KARO_CLI=$(get_cli_type "karo" "./config/settings.yaml")
+        else
+            KARO_CLI="claude"
+        fi
+    fi
+
+    # CLIタイプに応じたメッセージ
+    if [ "$KARO_CLI" = "claude" ]; then
+        echo "  ⚠️  セットアップのみモード: Claude Codeは未起動です"
+        echo ""
+        echo "  手動でClaude Codeを起動するには:"
+        echo "  ┌──────────────────────────────────────────────────────────┐"
+        echo "  │  # 家老を召喚                                            │"
+        echo "  │  tmux send-keys -t karo 'claude --dangerously-skip-permissions' Enter │"
+        echo "  │                                                          │"
+        echo "  │  # 部将・足軽を一斉召喚                                   │"
+        echo "  │  for i in {0..8}; do \\                                   │"
+        echo "  │    tmux send-keys -t multiagent:0.\$i \\                   │"
+        echo "  │      'claude --dangerously-skip-permissions' Enter       │"
+        echo "  │  done                                                    │"
+        echo "  └──────────────────────────────────────────────────────────┘"
+    elif [ "$KARO_CLI" = "glm" ]; then
+        echo "  ⚠️  セットアップのみモード: GLM Coding Plan は未起動です"
+        echo ""
+        echo "  手動でGLM Coding Plan を起動するには:"
+        echo "  ┌──────────────────────────────────────────────────────────┐"
+        echo "  │  # 家老を召喚                                            │"
+        echo "  │  tmux send-keys -t karo 'glm --dangerously-skip-permissions' Enter │"
+        echo "  │                                                          │"
+        echo "  │  # 部将・足軽を一斉召喚                                   │"
+        echo "  │  for i in {0..8}; do \\                                   │"
+        echo "  │    tmux send-keys -t multiagent:0.\$i \\                   │"
+        echo "  │      'glm --dangerously-skip-permissions' Enter          │"
+        echo "  │  done                                                    │"
+        echo "  └──────────────────────────────────────────────────────────┘"
+    else
+        CLI_NAME=$(get_cli_display_name "$KARO_CLI" 2>/dev/null || echo "$KARO_CLI")
+        echo "  ⚠️  セットアップのみモード: ${CLI_NAME}は未起動です"
+        echo ""
+        echo "  手動で${CLI_NAME}を起動するには config/settings.yaml を確認してください"
+    fi
     echo ""
 fi
 
 echo "  次のステップ:"
 echo "  ┌──────────────────────────────────────────────────────────┐"
-echo "  │  将軍の本陣にアタッチして命令を開始:                      │"
-echo "  │     tmux attach-session -t shogun   (または: css)        │"
+echo "  │  家老の本陣にアタッチして命令を開始:                      │"
+echo "  │     tmux attach-session -t karo   (または: csk)          │"
 echo "  │                                                          │"
-echo "  │  家老・足軽の陣を確認する:                                │"
+echo "  │  部将・足軽の陣を確認する:                                │"
 echo "  │     tmux attach-session -t multiagent   (または: csm)    │"
 echo "  │                                                          │"
 echo "  │  ※ 各エージェントは指示書を読み込み済み。                 │"
@@ -699,7 +893,7 @@ if [ "$OPEN_TERMINAL" = true ]; then
 
     # Windows Terminal が利用可能か確認
     if command -v wt.exe &> /dev/null; then
-        wt.exe -w 0 new-tab wsl.exe -e bash -c "tmux attach-session -t shogun" \; new-tab wsl.exe -e bash -c "tmux attach-session -t multiagent"
+        wt.exe -w 0 new-tab wsl.exe -e bash -c "tmux attach-session -t karo" \; new-tab wsl.exe -e bash -c "tmux attach-session -t multiagent"
         log_success "  └─ ターミナルタブ展開完了"
     else
         log_info "  └─ wt.exe が見つかりません。手動でアタッチしてください。"

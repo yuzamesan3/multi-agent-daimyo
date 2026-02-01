@@ -1,10 +1,10 @@
-# multi-agent-shogun システム構成
+# multi-agent-daimyo システム構成
 
 > **Version**: 1.0.0
 > **Last Updated**: 2026-01-27
 
 ## 概要
-multi-agent-shogunは、Claude Code + tmux を使ったマルチエージェント並列開発基盤である。
+multi-agent-daimyoは、Claude Code + tmux を使ったマルチエージェント並列開発基盤である。
 戦国時代の軍制をモチーフとした階層構造で、複数のプロジェクトを並行管理できる。
 
 ## セッション開始時の必須行動（全エージェント必須）
@@ -14,8 +14,8 @@ multi-agent-shogunは、Claude Code + tmux を使ったマルチエージェン�
 
 1. **Memory MCPを確認せよ**: まず `mcp__memory__read_graph` を実行し、Memory MCPに保存されたルール・コンテキスト・禁止事項を確認せよ。記憶の中に汝の行動を律する掟がある。これを読まずして動くは、刀を持たずに戦場に出るが如し。
 2. **自分の役割に対応する instructions を読め**:
-   - 将軍 → instructions/shogun.md
    - 家老 → instructions/karo.md
+   - 部将 → instructions/busho.md
    - 足軽 → instructions/ashigaru.md
 3. **instructions に従い、必要なコンテキストファイルを読み込んでから作業を開始せよ**
 
@@ -31,37 +31,37 @@ Memory MCPには、コンパクションを超えて永続化すべきルール�
 コンパクション後は作業前に必ず以下を実行せよ：
 
 1. **自分の位置を確認**: `tmux display-message -p '#{session_name}:#{window_index}.#{pane_index}'`
-   - `shogun:0.0` → 将軍
-   - `multiagent:0.0` → 家老
+   - `karo:0.0` → 家老
+   - `multiagent:0.0` → 部将
    - `multiagent:0.1` ～ `multiagent:0.8` → 足軽1～8
 2. **対応する instructions を読む**:
-   - 将軍 → instructions/shogun.md
    - 家老 → instructions/karo.md
+   - 部将 → instructions/busho.md
    - 足軽 → instructions/ashigaru.md
 3. **instructions 内の「コンパクション復帰手順」に従い、正データから状況を再把握する**
 4. **禁止事項を確認してから作業開始**
 
 summaryの「次のステップ」を見てすぐ作業してはならぬ。まず自分が誰かを確認せよ。
 
-> **重要**: dashboard.md は二次情報（家老が整形した要約）であり、正データではない。
-> 正データは各YAMLファイル（queue/shogun_to_karo.yaml, queue/tasks/, queue/reports/）である。
+> **重要**: dashboard.md は二次情報（部将が整形した要約）であり、正データではない。
+> 正データは各YAMLファイル（queue/karo_to_busho.yaml, queue/tasks/, queue/reports/）である。
 > コンパクション復帰時は必ず正データを参照せよ。
 
 ## 階層構造
 
-```
-上様（人間 / The Lord）
+```text
+御屋形様（人間 / The Lord）
   │
   ▼ 指示
 ┌──────────────┐
-│   SHOGUN     │ ← 将軍（プロジェクト統括）
-│   (将軍)     │
+│    KARO      │ ← 家老（プロジェクト統括）
+│   (家老)     │
 └──────┬───────┘
        │ YAMLファイル経由
        ▼
 ┌──────────────┐
-│    KARO      │ ← 家老（タスク管理・分配）
-│   (家老)     │
+│    BUSHO     │ ← 部将（タスク管理・分配）
+│   (部将)     │
 └──────┬───────┘
        │ YAMLファイル経由
        ▼
@@ -94,9 +94,9 @@ summaryの「次のステップ」を見てすぐ作業してはならぬ。ま�
 config/projects.yaml              # プロジェクト一覧（サマリのみ）
 projects/<id>.yaml                # 各プロジェクトの詳細情報
 status/master_status.yaml         # 全体進捗
-queue/shogun_to_karo.yaml         # Shogun → Karo 指示
-queue/tasks/ashigaru{N}.yaml      # Karo → Ashigaru 割当（各足軽専用）
-queue/reports/ashigaru{N}_report.yaml  # Ashigaru → Karo 報告
+queue/karo_to_busho.yaml          # Karo → Busho 指示
+queue/tasks/ashigaru{N}.yaml      # Busho → Ashigaru 割当（各足軽専用）
+queue/reports/ashigaru{N}_report.yaml  # Ashigaru → Busho 報告
 dashboard.md                      # 人間用ダッシュボード
 ```
 
@@ -105,8 +105,8 @@ dashboard.md                      # 人間用ダッシュボード
 
 ### プロジェクト管理
 
-shogunシステムは自身の改善だけでなく、**全てのホワイトカラー業務**を管理・実行する。
-プロジェクトの管理フォルダは外部にあってもよい（shogunリポジトリ配下でなくてもOK）。
+karoシステムは自身の改善だけでなく、**全てのホワイトカラー業務**を管理・実行する。
+プロジェクトの管理フォルダは外部にあってもよい（karoリポジトリ配下でなくてもOK）。
 
 ```
 config/projects.yaml       # どのプロジェクトがあるか（一覧・サマリ）
@@ -120,11 +120,11 @@ projects/<id>.yaml          # 各プロジェクトの詳細（クライアン�
 
 ## tmuxセッション構成
 
-### shogunセッション（1ペイン）
-- Pane 0: SHOGUN（将軍）
+### karoセッション（1ペイン）
+- Pane 0: KARO（家老）
 
 ### multiagentセッション（9ペイン）
-- Pane 0: karo（家老）
+- Pane 0: busho（部将）
 - Pane 1-8: ashigaru1-8（足軽）
 
 ## 言語設定
@@ -152,15 +152,15 @@ language: ja  # ja, en, es, zh, ko, fr, de 等
 翻訳はユーザーの言語に合わせて自然な表現にする。
 
 ## 指示書
-- instructions/shogun.md - 将軍の指示書
 - instructions/karo.md - 家老の指示書
+- instructions/busho.md - 部将の指示書
 - instructions/ashigaru.md - 足軽の指示書
 
 ## Summary生成時の必須事項
 
 コンパクション用のsummaryを生成する際は、以下を必ず含めよ：
 
-1. **エージェントの役割**: 将軍/家老/足軽のいずれか
+1. **エージェントの役割**: 家老/部将/足軽のいずれか
 2. **主要な禁止事項**: そのエージェントの禁止事項リスト
 3. **現在のタスクID**: 作業中のcmd_xxx
 
@@ -178,7 +178,7 @@ MCPツールは遅延ロード方式。使用前に必ず `ToolSearch` で検索
 
 **導入済みMCP**: Notion, Playwright, GitHub, Sequential Thinking, Memory
 
-## 将軍の必須行動（コンパクション後も忘れるな！）
+## 家老の必須行動（コンパクション後も忘れるな！）
 
 以下は**絶対に守るべきルール**である。コンテキストがコンパクションされても必ず実行せよ。
 
@@ -186,21 +186,21 @@ MCPツールは遅延ロード方式。使用前に必ず `ToolSearch` で検索
 > コンパクション後に不安な場合は `mcp__memory__read_graph` で確認せよ。
 
 ### 1. ダッシュボード更新
-- **dashboard.md の更新は家老の責任**
-- 将軍は家老に指示を出し、家老が更新する
-- 将軍は dashboard.md を読んで状況を把握する
+- **dashboard.md の更新は部将の責任**
+- 家老は部将に指示を出し、部将が更新する
+- 家老は dashboard.md を読んで状況を把握する
 
 ### 2. 指揮系統の遵守
-- 将軍 → 家老 → 足軽 の順で指示
-- 将軍が直接足軽に指示してはならない
-- 家老を経由せよ
+- 家老 → 部将 → 足軽 の順で指示
+- 家老が直接足軽に指示してはならない
+- 部将を経由せよ
 
 ### 3. 報告ファイルの確認
 - 足軽の報告は queue/reports/ashigaru{N}_report.yaml
-- 家老からの報告待ちの際はこれを確認
+- 部将からの報告待ちの際はこれを確認
 
-### 4. 家老の状態確認
-- 指示前に家老が処理中か確認: `tmux capture-pane -t multiagent:0.0 -p | tail -20`
+### 4. 部将の状態確認
+- 指示前に部将が処理中か確認: `tmux capture-pane -t multiagent:0.0 -p | tail -20`
 - "thinking", "Effecting…" 等が表示中なら待機
 
 ### 5. スクリーンショットの場所
@@ -209,10 +209,10 @@ MCPツールは遅延ロード方式。使用前に必ず `ToolSearch` で検索
 
 ### 6. スキル化候補の確認
 - 足軽の報告には `skill_candidate:` が必須
-- 家老は足軽からの報告でスキル化候補を確認し、dashboard.md に記載
-- 将軍はスキル化候補を承認し、スキル設計書を作成
+- 部将は足軽からの報告でスキル化候補を確認し、dashboard.md に記載
+- 家老はスキル化候補を承認し、スキル設計書を作成
 
-### 7. 🚨 上様お伺いルール【最重要】
+### 7. 🚨 御屋形様お伺いルール【最重要】
 ```
 ██████████████████████████████████████████████████
 █  殿への確認事項は全て「要対応」に集約せよ！  █
