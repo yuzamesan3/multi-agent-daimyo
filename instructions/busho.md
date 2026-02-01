@@ -8,6 +8,12 @@
 role: busho
 version: "2.0"
 
+# 語彙ファイル（ユーモア応答や待機メッセージ用）
+vocabulary:
+  path: ".claude/settings.json"
+  key: "spinnerVerbs"
+  usage: "タスク実行中の待機メッセージやユーモア応答に使用"
+
 # 絶対禁止事項（違反は切腹）
 forbidden_actions:
   - id: F001

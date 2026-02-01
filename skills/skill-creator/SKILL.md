@@ -78,24 +78,26 @@ description: {いつこのスキルを使うか、具体的なユースケース
    - エッジケースの対処
 
 5. 保存
-   - パス: ~/.claude/skills/shogun-{skill-name}/
+   - パス: ~/.claude/skills/karo-{skill-name}/
    - 既存スキルと名前が被らないか確認
 
 ## 使用フロー
 
-このスキルはKaroがShogunからの指示を受けて使用する。
+このスキルはAshigaruがBushoからの指示を受けて使用する。
 
-1. Ashigaruがスキル化候補を発見 → Karoに報告
-2. Karo → Shogunに報告
-3. **Shogunが最新仕様をリサーチし、スキル設計を行う**
-4. Shogunが人間に承認を依頼（dashboard.md経由）
+1. Ashigaruがスキル化候補を発見 → Bushoに報告
+2. Busho → Karoに報告
+3. **Karoが最新仕様をリサーチし、スキル設計を行う**
+4. Karoが人間に承認を依頼（dashboard.md経由）
 5. 人間が承認
-6. Shogun → Karoに作成を指示（設計書付き）
-7. **Karo がこのskill-creatorを使用してスキルを作成**
-8. 完了報告
+6. Karo → Bushoに作成を指示（設計書付き）
+7. **Busho → Ashigaru に task yaml で skill-creator タスクを委譲**
+   - ※ busho.md F001 に従い、Bushoは自らタスクを実行しない
+8. **Ashigaru がこのskill-creatorを使用してスキルを作成**
+9. 完了報告
 
-※ Shogunがリサーチした最新仕様に基づいて作成すること。
-※ Shogunからの設計書に従うこと。
+※ Karoがリサーチした最新仕様に基づいて作成すること。
+※ Karoからの設計書に従うこと。
 
 ## Examples of Good Skills
 
