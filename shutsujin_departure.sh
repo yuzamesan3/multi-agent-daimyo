@@ -787,13 +787,80 @@ NINJA_EOF
     tmux send-keys -t "multiagent:0.0" Enter
 
     # 足軽に指示書を読み込ませる（1-8）
+    # 注意: 各足軽のCLI起動完了を確認してからメッセージを送る
     sleep 2
     log_info "  └─ 足軽に指示書を伝達中..."
     for i in {1..8}; do
-        tmux send-keys -t "multiagent:0.$i" "instructions/ashigaru.md を読んで役割を理解せよ。汝は足軽${i}号である。"
-        sleep 0.3
-        tmux send-keys -t "multiagent:0.$i" Enter
+        ASHIGARU_NAME="ashigaru${i}"
+        ASHIGARU_MSG="instructions/ashigaru.md を読んで役割を理解せよ。汝は足軽${i}号である。"
+
+        # CLIタイプを取得
+        if [ "$CLI_ADAPTER_AVAILABLE" = true ]; then
+            ASHIGARU_CLI=$(get_cli_type "$ASHIGARU_NAME" "$CONFIG_FILE")
+        else
+            ASHIGARU_CLI="claude"
+        fi
+
+        # 起動完了を待機（最大60秒）
+        log_info "      └─ 足軽${i} ($ASHIGARU_CLI) の起動を待機中..."
+        local ashigaru_ready=false
+        local ashigaru_timeout=false
+        for wait_count in {1..60}; do
+            case "$ASHIGARU_CLI" in
+                claude)
+                    # Claude Codeは"bypass permissions"または入力プロンプトをチェック
+                    if tmux capture-pane -t "multiagent:0.$i" -p | grep -q -E "(bypass permissions|❯)"; then
+                        ashigaru_ready=true
+                        break
+                    fi
+                    ;;
+                crush)
+                    # Crushは"Yolo mode"または"ctrl+c quit"をチェック
+                    if tmux capture-pane -t "multiagent:0.$i" -p | grep -q -E "(Yolo mode|ctrl\+c quit|CRUSH)"; then
+                        ashigaru_ready=true
+                        break
+                    fi
+                    ;;
+                copilot)
+                    # Copilotはプロンプト表示をチェック
+                    if tmux capture-pane -t "multiagent:0.$i" -p | grep -q -E "(>|❯|Copilot)"; then
+                        ashigaru_ready=true
+                        break
+                    fi
+                    ;;
+                gemini)
+                    # Geminiはプロンプト表示をチェック
+                    if tmux capture-pane -t "multiagent:0.$i" -p | grep -q -E "(>|❯|Gemini)"; then
+                        ashigaru_ready=true
+                        break
+                    fi
+                    ;;
+                *)
+                    # その他のCLIは汎用プロンプトをチェック
+                    if tmux capture-pane -t "multiagent:0.$i" -p | grep -q -E "(>|❯|\$)"; then
+                        ashigaru_ready=true
+                        break
+                    fi
+                    ;;
+            esac
+            if [ "$wait_count" -ge 60 ]; then
+                ashigaru_timeout=true
+                log_error "      └─ 足軽${i} ($ASHIGARU_CLI) の起動待機がタイムアウト（${wait_count}秒）"
+                break
+            fi
+            sleep 1
+        done
+
+        if [ "$ashigaru_timeout" = true ]; then
+            echo "      └─ エラー: 足軽${i} の起動に失敗（CLI: ${ASHIGARU_CLI}）"
+            continue
+        fi
+
+        # メッセージ送信
+        tmux send-keys -t "multiagent:0.$i" "$ASHIGARU_MSG"
         sleep 0.5
+        tmux send-keys -t "multiagent:0.$i" Enter
+        log_info "      └─ 足軽${i} に指示書伝達完了"
     done
 
     log_success "✅ 全軍に指示書伝達完了"

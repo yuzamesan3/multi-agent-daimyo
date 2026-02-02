@@ -57,17 +57,12 @@ workflow:
   - step: 4
     action: execute_task
   - step: 5
-    action: request_koto_review
-    condition: "タスクに review_required: true がある場合（必須）、またはコーディングタスク完了時（推奨）"
-    command: "coderabbit --prompt-only --type uncommitted"
-    note: "工兎殿（軍目付）に検分を依頼。7-30分かかる。バックグラウンド実行推奨"
-  - step: 6
     action: write_report
     target: "queue/reports/ashigaru{N}_report.yaml"
-  - step: 7
+  - step: 6
     action: update_status
     value: done
-  - step: 8
+  - step: 7
     action: send_keys
     target: multiagent:0.0
     method: two_bash_calls
@@ -76,17 +71,6 @@ workflow:
       check_idle: true
       max_retries: 3
       interval_seconds: 10
-
-# 工兎（軍目付）連携
-koto_review:
-  enabled: true
-  command: "coderabbit --prompt-only --type uncommitted"
-  # 以下のいずれかの条件を満たす場合に実行（OR）
-  trigger_conditions:
-    - "タスクに review_required: true がある（必須）"
-    - "コーディングタスク（coding_*カテゴリ）完了時（推奨）"
-  report_type: koto_review
-  timeout_minutes: 10  # 通常数分〜10分程度
 
 # ファイルパス
 files:
@@ -300,84 +284,6 @@ skill_candidate:
 | 手順や知識が必要な作業 | ✅ |
 
 **注意**: `skill_candidate` の記入を忘れた報告は不完全とみなす。
-
-## 🔴 工兎殿（軍目付）への検分依頼
-
-コーディングタスク完了後、タスクに `review_required: true` がある場合は、工兎殿（CodeRabbit）に検分を依頼せよ。
-
-### 検分依頼の条件
-
-| 条件 | 検分依頼 |
-| ---- | -------- |
-| タスクに `review_required: true` がある | 必須 |
-| コーディングタスク（coding_* カテゴリ）完了時 | 推奨 |
-| ドキュメントのみのタスク | 不要 |
-
-### 実行手順
-
-#### STEP 1: 検分依頼を実行（バックグラウンド推奨）
-
-```bash
-# 前提: config/settings.yaml は既読（コンテキスト読み込み手順 Step 4）
-coderabbit --prompt-only --type uncommitted &
-```
-
-#### STEP 2: 検分完了を待つ（数分〜10分程度）
-
-```bash
-# バックグラウンドで実行した場合、完了を確認
-wait
-```
-
-または、定期的に確認:
-
-```bash
-# 10分ごとに確認（最大3回）
-for i in 1 2 3; do
-  sleep 600
-  jobs | grep -q coderabbit || break
-done
-```
-
-#### STEP 3: 検分結果を報告書に含める
-
-```yaml
-worker_id: ashigaru3
-task_id: subtask_001
-timestamp: "2026-01-27T15:46:30"
-status: done  # 既存ステータスを使用（done/failed/blocked）
-result:
-  type: koto_review  # この値で工兎の検分結果と識別
-  summary: "コード実装完了。工兎殿に検分を依頼し申した"
-  issues:
-    - file: "src/app.ts"
-      severity: high
-      message: "XSS脆弱性の可能性"
-    - file: "src/utils.ts"
-      severity: medium
-      message: "エラーハンドリング不足"
-  files_modified:
-    - "src/app.ts"
-    - "src/utils.ts"
-  notes: "検分結果16件。部将殿に修正タスクの分配を願い申す"
-```
-
-### 報告時のポイント
-
-- `type: koto_review` を必ず記載（部将が検分結果と認識するため）
-- severity（high/medium/low）を記載
-- **自分で全件修正しようとするな** → 部将が修正タスクを分配する
-- 修正量が多い場合、部将が複数足軽に並列分配する
-
-### 工兎殿への口上（send-keys）
-
-```bash
-# 【1回目】
-tmux send-keys -t multiagent:0.0 'ashigaru{N}、工兎殿の検分が完了いたした。報告書を確認されよ。修正タスクの分配をお願い申す。'
-
-# 【2回目】
-tmux send-keys -t multiagent:0.0 Enter
-```
 
 ## 🔴 同一ファイル書き込み禁止（RACE-001）
 
