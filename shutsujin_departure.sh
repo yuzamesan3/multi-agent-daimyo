@@ -803,8 +803,8 @@ NINJA_EOF
 
         # 起動完了を待機（最大60秒）
         log_info "      └─ 足軽${i} ($ASHIGARU_CLI) の起動を待機中..."
-        local ashigaru_ready=false
-        local ashigaru_timeout=false
+        ashigaru_ready=false
+        ashigaru_timeout=false
         for wait_count in {1..60}; do
             case "$ASHIGARU_CLI" in
                 claude)
