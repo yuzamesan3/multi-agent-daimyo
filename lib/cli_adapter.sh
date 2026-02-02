@@ -7,7 +7,7 @@
 #   - codex: OpenAI Codex CLI - OpenAI互換バックエンド対応
 #   - crush: Charm Crush CLI - OpenAI互換バックエンド対応
 #   - goose: Block Goose CLI - OpenAI互換バックエンド対応
-#   - copilot: GitHub Copilot CLI (github/copilot-cli)
+#   - copilot: GitHub Copilot CLI
 #   - gemini: Google Gemini CLI
 #
 # 軍目付（検分役 - 指揮系統とは独立）:
@@ -89,10 +89,13 @@ PY
     fi
 
     if command -v yq &>/dev/null; then
+        # mikefarah/yq と kislyuk/yq (jq wrapper) の両方に対応
+        # mikefarah/yq は --arg をサポートしないため、直接パスを埋め込む
         if [ "$key" = "default" ]; then
             value=$(yq -r '.cli.default // ""' "$yaml_config" 2>/dev/null)
         else
-            value=$(yq -r --arg agent "$agent_name" '.cli.agents[$agent].type // ""' "$yaml_config" 2>/dev/null)
+            # mikefarah/yq 用の構文（変数展開で直接パスを構築）
+            value=$(yq -r ".cli.agents.${agent_name}.type // \"\"" "$yaml_config" 2>/dev/null)
         fi
         echo "$value"
         return 0
@@ -334,13 +337,20 @@ build_cli_command() {
         copilot)
             # ─────────────────────────────────────────────────────────────────
             # GitHub Copilot CLI
-            # インストール: npm install -g @github/copilot
+            # インストール: https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli
             # バックエンド変更不可（GitHub認証）
             # ─────────────────────────────────────────────────────────────────
             base_cmd="copilot"
             env_vars=$(get_agent_env "$agent_name" "$yaml_config")
-            # Copilot CLIは対話型承認フロー
-            options=""
+            # 全ツールを自動承認（シェルコマンド、ファイル書き込み等）
+            options="--allow-all-tools"
+
+            # モデル設定（settings.yamlから読み込み）
+            local model
+            model=$(get_agent_model "$agent_name" "$yaml_config")
+            if [ -n "$model" ]; then
+                options="$options --model $model"
+            fi
             ;;
 
         gemini)
@@ -355,11 +365,11 @@ build_cli_command() {
             local model
             model=$(get_agent_model "$agent_name" "$yaml_config")
             if [ -n "$model" ]; then
-                options="-m \"$model\""
+                options="--model \"$model\""
             fi
 
             # YOLOモード（自動承認）
-            options="$options -y"
+            options="$options --yolo"
             ;;
 
         *)
@@ -534,8 +544,7 @@ validate_cli_availability() {
         copilot)
             if ! command -v copilot &>/dev/null; then
                 echo "Error: GitHub Copilot CLI が見つかりません" >&2
-                echo "インストール: npm install -g @github/copilot" >&2
-                echo "または: brew install copilot-cli" >&2
+                echo "インストール: https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli" >&2
                 return 1
             fi
             return 0

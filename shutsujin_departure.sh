@@ -573,6 +573,13 @@ if [ "$SETUP_ONLY" = false ]; then
         tmux send-keys -t karo "$KARO_CMD"
         tmux send-keys -t karo Enter
 
+        # Claude Code の許可確認ダイアログで "Yes, I accept" を選択
+        if [ "$KARO_CLI" = "claude" ]; then
+            sleep 2  # ダイアログ表示を待機
+            tmux send-keys -t karo Down   # 「Yes, I accept」を選択
+            tmux send-keys -t karo Enter  # 確定
+        fi
+
         CLI_ICON=$(get_cli_icon "$KARO_CLI")
         CLI_NAME=$(get_cli_display_name "$KARO_CLI")
         log_info "  │  └─ 家老、召喚完了 $CLI_ICON ($CLI_NAME)"
@@ -607,6 +614,13 @@ if [ "$SETUP_ONLY" = false ]; then
             tmux send-keys -t "multiagent:0.$i" "$AGENT_CMD"
             tmux send-keys -t "multiagent:0.$i" Enter
 
+            # Claude Code の許可確認ダイアログで "Yes, I accept" を選択
+            if [ "$AGENT_CLI" = "claude" ]; then
+                sleep 1  # ダイアログ表示を待機
+                tmux send-keys -t "multiagent:0.$i" Down   # 「Yes, I accept」を選択
+                tmux send-keys -t "multiagent:0.$i" Enter  # 確定
+            fi
+
             # CLI固有の指示書を生成
             if [ "$AGENT_CLI" != "claude" ]; then
                 generate_cli_instructions "$AGENT_NAME" "$AGENT_CLI" "./instructions" "./.github/copilot-instructions-${AGENT_NAME}.md" 2>/dev/null || true
@@ -639,6 +653,9 @@ if [ "$SETUP_ONLY" = false ]; then
         # 家老
         tmux send-keys -t karo "MAX_THINKING_TOKENS=0 claude --model opus --dangerously-skip-permissions"
         tmux send-keys -t karo Enter
+        sleep 2  # ダイアログ表示を待機
+        tmux send-keys -t karo Down   # 「Yes, I accept」を選択
+        tmux send-keys -t karo Enter  # 確定
         log_info "  └─ 家老、召喚完了"
 
         sleep 1
@@ -647,6 +664,9 @@ if [ "$SETUP_ONLY" = false ]; then
         for i in {0..8}; do
             tmux send-keys -t "multiagent:0.$i" "claude --dangerously-skip-permissions"
             tmux send-keys -t "multiagent:0.$i" Enter
+            sleep 1  # ダイアログ表示を待機
+            tmux send-keys -t "multiagent:0.$i" Down   # 「Yes, I accept」を選択
+            tmux send-keys -t "multiagent:0.$i" Enter  # 確定
         done
         log_info "  └─ 部将・足軽、召喚完了"
 

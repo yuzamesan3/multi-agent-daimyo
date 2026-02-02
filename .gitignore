@@ -1,6 +1,9 @@
 # Order file (internal use only)
 claude-karo-orders.md
 
+# VS Code settings
+.vscode/
+
 # Claude Code settings
 .claude/*
 !.claude/settings.json
