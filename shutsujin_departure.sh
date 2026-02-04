@@ -9,6 +9,12 @@
 
 set -e
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# ロケール設定（日本語文字化け対策）
+# ═══════════════════════════════════════════════════════════════════════════════
+export LANG=ja_JP.UTF-8
+export LC_ALL=ja_JP.UTF-8
+
 # スクリプトのディレクトリを取得
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
@@ -44,6 +50,10 @@ log_success() {
 
 log_war() {
     echo -e "\033[1;31m【戦】\033[0m $1"
+}
+
+log_error() {
+    echo -e "\033[1;31m【敗】\033[0m $1"
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -266,12 +276,23 @@ if [ -f "./dashboard.md" ]; then
     fi
 fi
 
+# 部将チェックポイントが存在する場合もバックアップ対象
+if [ -f "./queue/checkpoint/busho_checkpoint.yaml" ]; then
+    NEED_BACKUP=true
+fi
+
 if [ "$NEED_BACKUP" = true ]; then
     mkdir -p "$BACKUP_DIR" || true
     cp "./dashboard.md" "$BACKUP_DIR/" 2>/dev/null || true
     cp -r "./queue/reports" "$BACKUP_DIR/" 2>/dev/null || true
     cp -r "./queue/tasks" "$BACKUP_DIR/" 2>/dev/null || true
     cp "./queue/karo_to_busho.yaml" "$BACKUP_DIR/" 2>/dev/null || true
+    # 部将チェックポイントのバックアップ
+    if [ -f "./queue/checkpoint/busho_checkpoint.yaml" ]; then
+        mkdir -p "$BACKUP_DIR/checkpoint" || true
+        cp "./queue/checkpoint/busho_checkpoint.yaml" "$BACKUP_DIR/checkpoint/" 2>/dev/null || true
+        log_info "📦 部将チェックポイントをバックアップ: $BACKUP_DIR/checkpoint/"
+    fi
     log_info "📦 前回の記録をバックアップ: $BACKUP_DIR"
 fi
 
@@ -283,9 +304,57 @@ log_info "📜 前回の軍議記録を破棄中..."
 # queue ディレクトリが存在しない場合は作成
 [ -d ./queue/reports ] || mkdir -p ./queue/reports
 [ -d ./queue/tasks ] || mkdir -p ./queue/tasks
+[ -d ./queue/checkpoint ] || mkdir -p ./queue/checkpoint
 
-# 足軽タスクファイルリセット
-for i in {1..8}; do
+# 部将チェックポイントを初期化（テンプレート書き出し）
+CHECKPOINT_TIMESTAMP=$(date "+%Y-%m-%dT%H:%M:%S")
+cat > ./queue/checkpoint/busho_checkpoint.yaml << EOF
+# 部将の進捗チェックポイント
+# Git管理対象外（.gitignore に登録済み）
+# 出陣時に自動作成・リセットされる
+
+current_cmd: null
+updated_at: "${CHECKPOINT_TIMESTAMP}"
+phase: idle  # idle | received | distributed | in_progress | review_pending | done
+
+task_progress:
+  total: 0
+  completed: 0
+  by_priority:
+    critical: { total: 0, done: 0 }
+    high: { total: 0, done: 0 }
+    medium: { total: 0, done: 0 }
+    low: { total: 0, done: 0 }
+
+ashigaru_daisho_status: idle  # 足軽大将は別管理（実作業なし）
+
+ashigaru_status:
+  ashigaru2: { task: null, status: idle }
+  ashigaru3: { task: null, status: idle }
+  ashigaru4: { task: null, status: idle }
+  ashigaru5: { task: null, status: idle }
+  ashigaru6: { task: null, status: idle }
+  ashigaru7: { task: null, status: idle }
+  ashigaru8: { task: null, status: idle }
+
+checklist:
+  all_tasks_complete: false
+  build_verified: false
+  test_verified: false
+  coderabbit_review: pending
+  coderabbit_issues_resolved: false
+  dashboard_updated: false
+
+next_action: "家老からの指示を待つ"
+
+notes: |
+  出陣時に自動生成されたテンプレート。
+  cmd受領時に部将が更新する。
+EOF
+log_info "  └─ 部将チェックポイント初期化完了"
+
+# 足軽タスクファイルリセット（足軽2-8のみ。足軽大将は実作業しない）
+for i in {2..8}; do
     cat > ./queue/tasks/ashigaru${i}.yaml << EOF
 # 足軽${i}専用タスクファイル
 task:
@@ -298,8 +367,8 @@ task:
 EOF
 done
 
-# 足軽レポートファイルリセット
-for i in {1..8}; do
+# 足軽レポートファイルリセット（足軽2-8のみ）
+for i in {2..8}; do
     cat > ./queue/reports/ashigaru${i}_report.yaml << EOF
 worker_id: ashigaru${i}
 task_id: null
@@ -315,47 +384,7 @@ queue: []
 EOF
 
 cat > ./queue/busho_to_ashigaru.yaml << 'EOF'
-assignments:
-  ashigaru1:
-    task_id: null
-    description: null
-    target_path: null
-    status: idle
-  ashigaru2:
-    task_id: null
-    description: null
-    target_path: null
-    status: idle
-  ashigaru3:
-    task_id: null
-    description: null
-    target_path: null
-    status: idle
-  ashigaru4:
-    task_id: null
-    description: null
-    target_path: null
-    status: idle
-  ashigaru5:
-    task_id: null
-    description: null
-    target_path: null
-    status: idle
-  ashigaru6:
-    task_id: null
-    description: null
-    target_path: null
-    status: idle
-  ashigaru7:
-    task_id: null
-    description: null
-    target_path: null
-    status: idle
-  ashigaru8:
-    task_id: null
-    description: null
-    target_path: null
-    status: idle
+queue: []
 EOF
 
 log_success "✅ 陣払い完了"
@@ -434,31 +463,31 @@ echo ""
 if ! command -v tmux &> /dev/null; then
     echo ""
     echo "  ╔════════════════════════════════════════════════════════╗"
-    echo "  ║  [ERROR] tmux not found!                              ║"
-    echo "  ║  tmux が見つかりません                                 ║"
+    echo "  ║  [ERROR] tmux not found!                               ║"
+    echo "  ║  tmux が見つかりません                                    ║"
     echo "  ╠════════════════════════════════════════════════════════╣"
-    echo "  ║  Run first_setup.sh first:                            ║"
-    echo "  ║  まず first_setup.sh を実行してください:               ║"
-    echo "  ║     ./first_setup.sh                                  ║"
+    echo "  ║  Run first_setup.sh first:                             ║"
+    echo "  ║  まず first_setup.sh を実行してください:                   ║"
+    echo "  ║     ./first_setup.sh                                   ║"
     echo "  ╚════════════════════════════════════════════════════════╝"
     echo ""
     exit 1
 fi
 
-log_war "⚔️ 部将・足軽の陣を構築中（9名配備）..."
+log_war "⚔️ 部将・足軽大将・足軽の陣を構築中（9名配備）..."
 
-# 最初のペイン作成
-if ! tmux new-session -d -s multiagent -n "agents" 2>/dev/null; then
+# 最初のペイン作成（-u: UTF-8強制モード）
+if ! tmux -u new-session -d -s multiagent -n "agents" 2>/dev/null; then
     echo ""
     echo "  ╔════════════════════════════════════════════════════════════╗"
-    echo "  ║  [ERROR] Failed to create tmux session 'multiagent'      ║"
-    echo "  ║  tmux セッション 'multiagent' の作成に失敗しました       ║"
+    echo "  ║  [ERROR] Failed to create tmux session 'multiagent'        ║"
+    echo "  ║  tmux セッション 'multiagent' の作成に失敗しました              ║"
     echo "  ╠════════════════════════════════════════════════════════════╣"
-    echo "  ║  An existing session may be running.                     ║"
-    echo "  ║  既存セッションが残っている可能性があります              ║"
-    echo "  ║                                                          ║"
-    echo "  ║  Check: tmux ls                                          ║"
-    echo "  ║  Kill:  tmux kill-session -t multiagent                  ║"
+    echo "  ║  An existing session may be running.                       ║"
+    echo "  ║  既存セッションが残っている可能性があります                       ║"
+    echo "  ║                                                            ║"
+    echo "  ║  Check: tmux ls                                            ║"
+    echo "  ║  Kill:  tmux kill-session -t multiagent                    ║"
     echo "  ╚════════════════════════════════════════════════════════════╝"
     echo ""
     exit 1
@@ -482,15 +511,18 @@ tmux select-pane -t "multiagent:0.6"
 tmux split-window -v
 tmux split-window -v
 
-# ペインタイトル設定（0: busho, 1-8: ashigaru1-8）
-PANE_TITLES=("busho" "ashigaru1" "ashigaru2" "ashigaru3" "ashigaru4" "ashigaru5" "ashigaru6" "ashigaru7" "ashigaru8")
-# 色設定（busho: 赤, ashigaru: 青）
-PANE_COLORS=("red" "blue" "blue" "blue" "blue" "blue" "blue" "blue" "blue")
+# ペインタイトル設定（0: busho, 1: ashigaru-daisho, 2-8: ashigaru2-8）
+PANE_TITLES=("busho" "ashigaru-daisho" "ashigaru2" "ashigaru3" "ashigaru4" "ashigaru5" "ashigaru6" "ashigaru7" "ashigaru8")
+# 色設定（busho: 赤, ashigaru-daisho: 黄, ashigaru: 青）
+PANE_COLORS=("red" "yellow" "blue" "blue" "blue" "blue" "blue" "blue" "blue")
 
 for i in {0..8}; do
     tmux select-pane -t "multiagent:0.$i" -T "${PANE_TITLES[$i]}"
     PROMPT_STR=$(generate_prompt "${PANE_TITLES[$i]}" "${PANE_COLORS[$i]}" "$SHELL_SETTING")
-    tmux send-keys -t "multiagent:0.$i" "cd \"$(pwd)\" && export PS1='${PROMPT_STR}' && clear" Enter
+    # ロケール設定 + ディレクトリ移動 + プロンプト設定 + エージェントID環境変数
+    # AGENT_ID: エージェント識別子（busho, ashigaru-daisho, ashigaru2-8）
+    # AGENT_PANE: tmuxペイン番号（0-8）
+    tmux send-keys -t "multiagent:0.$i" "export LANG=ja_JP.UTF-8 && export LC_ALL=ja_JP.UTF-8 && export AGENT_ID='${PANE_TITLES[$i]}' && export AGENT_PANE='$i' && cd \"$(pwd)\" && export PS1='${PROMPT_STR}' && clear" Enter
 done
 
 log_success "  └─ 部将・足軽の陣、構築完了"
@@ -500,23 +532,24 @@ echo ""
 # STEP 5: karoセッション作成（1ペイン）
 # ═══════════════════════════════════════════════════════════════════════════════
 log_war "👑 家老の本陣を構築中..."
-if ! tmux new-session -d -s karo 2>/dev/null; then
+if ! tmux -u new-session -d -s karo 2>/dev/null; then
     echo ""
     echo "  ╔════════════════════════════════════════════════════════════╗"
-    echo "  ║  [ERROR] Failed to create tmux session 'karo'            ║"
-    echo "  ║  tmux セッション 'karo' の作成に失敗しました             ║"
+    echo "  ║  [ERROR] Failed to create tmux session 'karo'              ║"
+    echo "  ║  tmux セッション 'karo' の作成に失敗しました                    ║"
     echo "  ╠════════════════════════════════════════════════════════════╣"
-    echo "  ║  An existing session may be running.                     ║"
-    echo "  ║  既存セッションが残っている可能性があります              ║"
-    echo "  ║                                                          ║"
-    echo "  ║  Check: tmux ls                                          ║"
-    echo "  ║  Kill:  tmux kill-session -t karo                        ║"
+    echo "  ║  An existing session may be running.                       ║"
+    echo "  ║  既存セッションが残っている可能性があります                       ║"
+    echo "  ║                                                            ║"
+    echo "  ║  Check: tmux ls                                            ║"
+    echo "  ║  Kill:  tmux kill-session -t karo                          ║"
     echo "  ╚════════════════════════════════════════════════════════════╝"
     echo ""
     exit 1
 fi
 KARO_PROMPT=$(generate_prompt "家老" "magenta" "$SHELL_SETTING")
-tmux send-keys -t karo "cd \"$(pwd)\" && export PS1='${KARO_PROMPT}' && clear" Enter
+# ロケール設定 + ディレクトリ移動 + プロンプト設定
+tmux send-keys -t karo "export LANG=ja_JP.UTF-8 && export LC_ALL=ja_JP.UTF-8 && cd \"$(pwd)\" && export PS1='${KARO_PROMPT}' && clear" Enter
 tmux select-pane -t karo:0.0 -P 'bg=#002b36'  # 家老の Solarized Dark
 
 log_success "  └─ 家老の本陣、構築完了"
@@ -591,9 +624,9 @@ if [ "$SETUP_ONLY" = false ]; then
 
         sleep 1
 
-        # 部将 + 足軽（9ペイン）
-        log_info "  ├─ 部将・足軽を召喚中..."
-        AGENT_NAMES=("busho" "ashigaru1" "ashigaru2" "ashigaru3" "ashigaru4" "ashigaru5" "ashigaru6" "ashigaru7" "ashigaru8")
+        # 部将 + 足軽大将 + 足軽（9ペイン）
+        log_info "  ├─ 部将・足軽大将・足軽を召喚中..."
+        AGENT_NAMES=("busho" "ashigaru-daisho" "ashigaru2" "ashigaru3" "ashigaru4" "ashigaru5" "ashigaru6" "ashigaru7" "ashigaru8")
 
         for i in {0..8}; do
             AGENT_NAME="${AGENT_NAMES[$i]}"
@@ -786,83 +819,182 @@ NINJA_EOF
     sleep 0.5
     tmux send-keys -t "multiagent:0.0" Enter
 
-    # 足軽に指示書を読み込ませる（1-8）
-    # 注意: 各足軽のCLI起動完了を確認してからメッセージを送る
+    # 足軽大将 + 足軽に指示書を読み込ませる（並列処理）
+    # 注意: 各エージェントのCLI起動完了を確認してからメッセージを送る
     sleep 2
-    log_info "  └─ 足軽に指示書を伝達中..."
-    for i in {1..8}; do
+    log_info "  └─ 足軽大将・足軽に指示書を伝達中（並列）..."
+    
+    # 一時ファイルディレクトリ作成
+    ASYNC_RESULT_DIR=$(mktemp -d)
+    
+    # --- 並列待機・送信関数 ---
+    # 引数: $1=ペイン番号, $2=エージェント名, $3=CLI種別, $4=送信メッセージ, $5=結果ファイルパス
+    wait_and_send_async() {
+        local pane_num=$1
+        local agent_name=$2
+        local cli_type=$3
+        local message=$4
+        local result_file=$5
+        local max_wait=300  # 最大300秒待機
+        local ready=false
+        local pane_output=""
+        
+        # Crushは表示領域に依存するため、固定時間待機+送信成功確認ループを使用
+        if [ "$cli_type" = "crush" ]; then
+            local max_retries=5
+            local retry_wait=5
+            wait_count=0
+            
+            for retry in $(seq 1 $max_retries); do
+                # 起動待機
+                sleep $retry_wait
+                wait_count=$((wait_count + retry_wait))
+                
+                # 送信前のペイン内容を記録
+                local before_content
+                before_content=$(tmux capture-pane -t "multiagent:0.$pane_num" -p -S - -E - 2>/dev/null)
+                
+                # 指示書を送信
+                tmux send-keys -t "multiagent:0.$pane_num" "$message"
+                sleep 0.3
+                tmux send-keys -t "multiagent:0.$pane_num" Enter
+                
+                # 応答を待機
+                sleep 3
+                wait_count=$((wait_count + 3))
+                
+                # 送信後のペイン内容を確認
+                local after_content
+                after_content=$(tmux capture-pane -t "multiagent:0.$pane_num" -p -S - -E - 2>/dev/null)
+                
+                # 内容が変化していたら成功（CLIが応答した）
+                if [ "$before_content" != "$after_content" ]; then
+                    ready=true
+                    break
+                fi
+                # 変化がなければ次のリトライへ
+            done
+            
+            # Crushはここで処理完了（成功/失敗は後段で判定）
+        else
+            for wait_count in $(seq 1 $max_wait); do
+                # ペイン出力をキャプチャ（-S - で履歴全体、-E - で最後まで）
+                pane_output=$(tmux capture-pane -t "multiagent:0.$pane_num" -p -S - -E - 2>/dev/null)
+                
+                case "$cli_type" in
+                    claude)
+                        # Claude Code: "bypass permissions on" が表示される
+                        if echo "$pane_output" | grep -q "bypass permissions"; then
+                            ready=true
+                            break
+                        fi
+                        ;;
+                    copilot)
+                        # Copilot: "Type @ to mention files" が表示される
+                        if echo "$pane_output" | grep -q "Type @ to mention"; then
+                            ready=true
+                            break
+                        fi
+                        ;;
+                    gemini)
+                        # Gemini: "Tips for getting started" または "/help for more" が表示される
+                        if echo "$pane_output" | grep -q -E "(Tips for getting started|/help for more)"; then
+                            ready=true
+                            break
+                        fi
+                        ;;
+                    *)
+                        # その他: 汎用プロンプト検出
+                        if echo "$pane_output" | grep -q -E "(>|❯|\$)"; then
+                            ready=true
+                            break
+                        fi
+                        ;;
+                esac
+                sleep 1
+            done
+        fi
+        
+        if [ "$ready" = true ]; then
+            # Crushはループ内で既に送信済みなのでスキップ
+            if [ "$cli_type" != "crush" ]; then
+                tmux send-keys -t "multiagent:0.$pane_num" "$message"
+                sleep 0.3
+                tmux send-keys -t "multiagent:0.$pane_num" Enter
+            fi
+            echo "success:${agent_name}:${pane_num}:${wait_count}" > "$result_file"
+        else
+            echo "timeout:${agent_name}:${pane_num}:${max_wait}" > "$result_file"
+        fi
+    }
+    
+    # --- 足軽大将（ペイン1）をバックグラウンドで起動待機 ---
+    DAISHO_NAME="ashigaru-daisho"
+    DAISHO_MSG="instructions/ashigaru-daisho.md を読んで役割を理解せよ。汝は足軽大将である。"
+    if [ "$CLI_ADAPTER_AVAILABLE" = true ]; then
+        DAISHO_CLI=$(get_cli_type "$DAISHO_NAME" "$CONFIG_FILE")
+    else
+        DAISHO_CLI="claude"
+    fi
+    log_info "      └─ 足軽大将 ($DAISHO_CLI) の起動待機を開始..."
+    wait_and_send_async 1 "$DAISHO_NAME" "$DAISHO_CLI" "$DAISHO_MSG" "$ASYNC_RESULT_DIR/daisho.result" &
+    DAISHO_PID=$!
+    
+    # --- 足軽2-8をバックグラウンドで起動待機 ---
+    declare -a ASHIGARU_PIDS
+    for i in {2..8}; do
         ASHIGARU_NAME="ashigaru${i}"
         ASHIGARU_MSG="instructions/ashigaru.md を読んで役割を理解せよ。汝は足軽${i}号である。"
-
-        # CLIタイプを取得
+        
         if [ "$CLI_ADAPTER_AVAILABLE" = true ]; then
             ASHIGARU_CLI=$(get_cli_type "$ASHIGARU_NAME" "$CONFIG_FILE")
         else
             ASHIGARU_CLI="claude"
         fi
-
-        # 起動完了を待機（最大60秒）
-        log_info "      └─ 足軽${i} ($ASHIGARU_CLI) の起動を待機中..."
-        ashigaru_ready=false
-        ashigaru_timeout=false
-        for wait_count in {1..60}; do
-            case "$ASHIGARU_CLI" in
-                claude)
-                    # Claude Codeは"bypass permissions"または入力プロンプトをチェック
-                    if tmux capture-pane -t "multiagent:0.$i" -p | grep -q -E "(bypass permissions|❯)"; then
-                        ashigaru_ready=true
-                        break
-                    fi
-                    ;;
-                crush)
-                    # Crushは"Yolo mode"または"ctrl+c quit"をチェック
-                    if tmux capture-pane -t "multiagent:0.$i" -p | grep -q -E "(Yolo mode|ctrl\+c quit|CRUSH)"; then
-                        ashigaru_ready=true
-                        break
-                    fi
-                    ;;
-                copilot)
-                    # Copilotはプロンプト表示をチェック
-                    if tmux capture-pane -t "multiagent:0.$i" -p | grep -q -E "(>|❯|Copilot)"; then
-                        ashigaru_ready=true
-                        break
-                    fi
-                    ;;
-                gemini)
-                    # Geminiはプロンプト表示をチェック
-                    if tmux capture-pane -t "multiagent:0.$i" -p | grep -q -E "(>|❯|Gemini)"; then
-                        ashigaru_ready=true
-                        break
-                    fi
-                    ;;
-                *)
-                    # その他のCLIは汎用プロンプトをチェック
-                    if tmux capture-pane -t "multiagent:0.$i" -p | grep -q -E "(>|❯|\$)"; then
-                        ashigaru_ready=true
-                        break
-                    fi
-                    ;;
-            esac
-            if [ "$wait_count" -ge 60 ]; then
-                ashigaru_timeout=true
-                log_error "      └─ 足軽${i} ($ASHIGARU_CLI) の起動待機がタイムアウト（${wait_count}秒）"
-                break
-            fi
-            sleep 1
-        done
-
-        if [ "$ashigaru_timeout" = true ]; then
-            echo "      └─ エラー: 足軽${i} の起動に失敗（CLI: ${ASHIGARU_CLI}）"
-            continue
-        fi
-
-        # メッセージ送信
-        tmux send-keys -t "multiagent:0.$i" "$ASHIGARU_MSG"
-        sleep 0.5
-        tmux send-keys -t "multiagent:0.$i" Enter
-        log_info "      └─ 足軽${i} に指示書伝達完了"
+        
+        log_info "      └─ 足軽${i} ($ASHIGARU_CLI) の起動待機を開始..."
+        wait_and_send_async "$i" "$ASHIGARU_NAME" "$ASHIGARU_CLI" "$ASHIGARU_MSG" "$ASYNC_RESULT_DIR/ashigaru${i}.result" &
+        ASHIGARU_PIDS+=($!)
     done
-
+    
+    # --- 全バックグラウンドプロセスの完了を待機 ---
+    log_info "      └─ 全エージェントの起動完了を待機中..."
+    wait $DAISHO_PID
+    for pid in "${ASHIGARU_PIDS[@]}"; do
+        wait $pid
+    done
+    
+    # --- 結果を確認・表示 ---
+    echo ""
+    log_info "  └─ 指示書伝達結果:"
+    
+    # 足軽大将の結果
+    if [ -f "$ASYNC_RESULT_DIR/daisho.result" ]; then
+        DAISHO_RESULT=$(cat "$ASYNC_RESULT_DIR/daisho.result")
+        IFS=':' read -r RESULT_STATUS RESULT_AGENT RESULT_PANE RESULT_WAIT <<< "$DAISHO_RESULT"
+        if [ "$RESULT_STATUS" = "success" ]; then
+            log_success "      └─ 足軽大将: 指示書伝達完了（${RESULT_WAIT}秒, ${RESULT_AGENT}, pane ${RESULT_PANE}）"
+        else
+            log_error "      └─ 足軽大将: 起動タイムアウト（${RESULT_WAIT}秒, ${RESULT_AGENT}, pane ${RESULT_PANE}）"
+        fi
+    fi
+    
+    # 足軽2-8の結果
+    for i in {2..8}; do
+        if [ -f "$ASYNC_RESULT_DIR/ashigaru${i}.result" ]; then
+            RESULT=$(cat "$ASYNC_RESULT_DIR/ashigaru${i}.result")
+            IFS=':' read -r RESULT_STATUS RESULT_AGENT RESULT_PANE RESULT_WAIT <<< "$RESULT"
+            if [ "$RESULT_STATUS" = "success" ]; then
+                log_success "      └─ 足軽${i}: 指示書伝達完了（${RESULT_WAIT}秒, ${RESULT_AGENT}, pane ${RESULT_PANE}）"
+            else
+                log_error "      └─ 足軽${i}: 起動タイムアウト（${RESULT_WAIT}秒, ${RESULT_AGENT}, pane ${RESULT_PANE}）"
+            fi
+        fi
+    done
+    
+    # 一時ディレクトリ削除
+    rm -rf "$ASYNC_RESULT_DIR"
+    
     log_success "✅ 全軍に指示書伝達完了"
     echo ""
 fi
@@ -886,22 +1018,22 @@ echo "     ┌──────────────────────
 echo "     │  Pane 0: 家老 (KARO)        │  ← 総大将・プロジェクト統括"
 echo "     └─────────────────────────────┘"
 echo ""
-echo "     【multiagentセッション】部将・足軽の陣（3x3 = 9ペイン）"
+echo "     【multiagentセッション】部将・足軽大将・足軽の陣（3x3 = 9ペイン）"
 echo "     ┌─────────┬─────────┬─────────┐"
 echo "     │  busho  │ashigaru3│ashigaru6│"
-echo "     │  (部将) │ (足軽3) │ (足軽6) │"
+echo "     │  (部将) │ (足軽3) │ (足軽6)  │"
 echo "     ├─────────┼─────────┼─────────┤"
-echo "     │ashigaru1│ashigaru4│ashigaru7│"
-echo "     │ (足軽1) │ (足軽4) │ (足軽7) │"
+echo "     │  daisho │ashigaru4│ashigaru7│"
+echo "     │(足軽大将)│ (足軽4)  │ (足軽7)  │"
 echo "     ├─────────┼─────────┼─────────┤"
 echo "     │ashigaru2│ashigaru5│ashigaru8│"
-echo "     │ (足軽2) │ (足軽5) │ (足軽8) │"
+echo "     │ (足軽2)  │ (足軽5) │ (足軽8)  │"
 echo "     └─────────┴─────────┴─────────┘"
 echo ""
 
 echo ""
 echo "  ╔══════════════════════════════════════════════════════════╗"
-echo "  ║  🏯 出陣準備完了！天下布武！                              ║"
+echo "  ║  🏯 出陣準備完了！天下布武！                                 ║"
 echo "  ╚══════════════════════════════════════════════════════════╝"
 echo ""
 
@@ -923,12 +1055,12 @@ if [ "$SETUP_ONLY" = true ]; then
         echo ""
         echo "  手動でClaude Codeを起動するには:"
         echo "  ┌──────────────────────────────────────────────────────────┐"
-        echo "  │  # 家老を召喚                                            │"
+        echo "  │  # 家老を召喚                                              │"
         echo "  │  tmux send-keys -t karo 'claude --dangerously-skip-permissions' Enter │"
         echo "  │                                                          │"
-        echo "  │  # 部将・足軽を一斉召喚                                   │"
-        echo "  │  for i in {0..8}; do \\                                   │"
-        echo "  │    tmux send-keys -t multiagent:0.\$i \\                   │"
+        echo "  │  # 部将・足軽を一斉召喚                                     │"
+        echo "  │  for i in {0..8}; do \\                                  │"
+        echo "  │    tmux send-keys -t multiagent:0.\$i \\                 │"
         echo "  │      'claude --dangerously-skip-permissions' Enter       │"
         echo "  │  done                                                    │"
         echo "  └──────────────────────────────────────────────────────────┘"
@@ -937,12 +1069,12 @@ if [ "$SETUP_ONLY" = true ]; then
         echo ""
         echo "  手動でGLM Coding Plan を起動するには:"
         echo "  ┌──────────────────────────────────────────────────────────┐"
-        echo "  │  # 家老を召喚                                            │"
+        echo "  │  # 家老を召喚                                              │"
         echo "  │  tmux send-keys -t karo 'glm --dangerously-skip-permissions' Enter │"
         echo "  │                                                          │"
-        echo "  │  # 部将・足軽を一斉召喚                                   │"
-        echo "  │  for i in {0..8}; do \\                                   │"
-        echo "  │    tmux send-keys -t multiagent:0.\$i \\                   │"
+        echo "  │  # 部将・足軽を一斉召喚                                      │"
+        echo "  │  for i in {0..8}; do \\                                  │"
+        echo "  │    tmux send-keys -t multiagent:0.\$i \\                 │"
         echo "  │      'glm --dangerously-skip-permissions' Enter          │"
         echo "  │  done                                                    │"
         echo "  └──────────────────────────────────────────────────────────┘"

@@ -661,9 +661,10 @@ generate_cli_instructions() {
     local instructions_dir="$3"
     local output_file="$4"
 
-    # 足軽1-8の場合は ashigaru.md を使用
+    # エージェント名から指示書ファイル名を決定
     local base_name="$agent_name"
-    if [[ "$agent_name" =~ ^ashigaru[1-8]$ ]]; then
+    if [[ "$agent_name" =~ ^ashigaru[2-8]$ ]]; then
+        # 足軽2-8は共通の ashigaru.md を使用
         base_name="ashigaru"
     fi
 
@@ -813,7 +814,8 @@ generate_agent_roster() {
 |------|-----|-------------|-------------|
 ROSTER_HEADER
 
-    local agents=("ashigaru1" "ashigaru2" "ashigaru3" "ashigaru4" "ashigaru5" "ashigaru6" "ashigaru7" "ashigaru8")
+    # 足軽大将は実作業をしないため、足軽名簿には足軽2-8のみ含める
+    local agents=("ashigaru2" "ashigaru3" "ashigaru4" "ashigaru5" "ashigaru6" "ashigaru7" "ashigaru8")
 
     for agent in "${agents[@]}"; do
         local cli_type=$(get_cli_type "$agent" "$yaml_config")

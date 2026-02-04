@@ -30,6 +30,7 @@ output/
 queue/research/
 queue/tasks/
 queue/reports/
+queue/checkpoint/
 
 # Memory MCP data (local to each installation)
 memory/
